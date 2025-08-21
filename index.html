@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Redirecting...</title>
+    <meta http-equiv="refresh" content="0; url=privacy.html">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px 0;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h1 { margin-bottom: 20px; }
+        p { margin: 10px 0; }
+        a { color: #fff; text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>🔒 Privacy Policy</h1>
+    <div class="loader"></div>
+    <p>Redirecting to privacy policy...</p>
+    <p>If you are not redirected automatically, <a href="privacy.html">click here</a></p>
+    
+    <script>
+        // Fallback redirect after 3 seconds
+        setTimeout(function() {
+            window.location.href = 'privacy.html';
+        }, 3000);
+    </script>
+</body>
+</html>
