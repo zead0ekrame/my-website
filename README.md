@@ -9,7 +9,7 @@ This repository contains the privacy policy for our chatbot application that int
 
 ## 🌐 Live Demo
 
-The privacy policy is hosted and accessible at: [Your GitHub Pages URL]
+The privacy policy is hosted and accessible at: [ekramy-ai.online](https://ekramy-ai.online)
 
 ## 📱 Features
 
