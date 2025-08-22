@@ -1,53 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy - Redirecting...</title>
-    <meta http-equiv="refresh" content="0; url=privacy.html">
+    <title>Ekramy AI - سياسات الخصوصية</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        * {
             margin: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px 0;
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            line-height: 1.6;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
         }
-        h1 { margin-bottom: 20px; }
-        p { margin: 10px 0; }
-        a { color: #fff; text-decoration: underline; }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        .links-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .policy-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .policy-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .policy-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .policy-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .policy-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .contact-info {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .contact-info h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .contact-item {
+            margin: 10px 0;
+            font-size: 1.1rem;
+        }
+        
+        .contact-item a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .links-container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🔒 Privacy Policy</h1>
-    <div class="loader"></div>
-    <p>Redirecting to privacy policy...</p>
-    <p>If you are not redirected automatically, <a href="privacy.html">click here</a></p>
-    
-    <script>
-        // Fallback redirect after 3 seconds
-        setTimeout(function() {
-            window.location.href = 'privacy.html';
-        }, 3000);
-    </script>
+    <div class="container">
+        <div class="logo">🤖</div>
+        <h1>Ekramy AI</h1>
+        <p class="subtitle">سياسات الخصوصية والشروط - شات بوت ذكي للخدمة والعملاء</p>
+        
+        <div class="links-container">
+            <a href="privacy.html" class="policy-card">
+                <span class="policy-icon">🔒</span>
+                <div class="policy-title">سياسة الخصوصية</div>
+                <div class="policy-desc">تعرف على كيفية جمع وحماية بياناتك الشخصية</div>
+            </a>
+            
+            <a href="terms.html" class="policy-card">
+                <span class="policy-icon">📋</span>
+                <div class="policy-title">الشروط والأحكام</div>
+                <div class="policy-desc">الشروط التي تحكم استخدام خدمة الشات بوت</div>
+            </a>
+            
+            <a href="data-deletion.html" class="policy-card">
+                <span class="policy-icon">🗑️</span>
+                <div class="policy-title">طلب حذف البيانات</div>
+                <div class="policy-desc">تعرف على كيفية طلب حذف بياناتك الشخصية</div>
+            </a>
+        </div>
+        
+        <div class="contact-info">
+            <h3>📞 معلومات التواصل</h3>
+            <div class="contact-item">
+                <strong>📧 البريد الإلكتروني:</strong> 
+                <a href="mailto:ziad@ekramy-ai.online">ziad@ekramy-ai.online</a>
+            </div>
+            <div class="contact-item">
+                <strong>📱 الهاتف:</strong> +201066161454
+            </div>
+            <div class="contact-item">
+                <strong>🌐 الموقع:</strong> <a href="https://ekramy-ai.online">ekramy-ai.online</a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
