@@ -91,9 +91,11 @@
 
   <div class="step">
     <span class="step-number">1</span>
-    <strong>Send an Email Request</strong><br>
-    Email us at <a href="mailto:ziad@ekramy-ai.online">ziad@ekramy-ai.online</a> with the subject line 
-    <strong>"Data Deletion Request"</strong>
+    <strong>Automated Data Deletion Request</strong><br>
+    Use our automated deletion endpoint: <br>
+    <code>POST https://ekramy-ai.online/user-data-deletion</code><br>
+    <em>Or send an email to <a href="mailto:ziad@ekramy-ai.online">ziad@ekramy-ai.online</a> with the subject line 
+    <strong>"Data Deletion Request"</strong></em>
   </div>
 
   <div class="step">
@@ -124,11 +126,17 @@
     <strong>Confirmation and Processing</strong><br>
     Once verified, we will:
     <ul>
-      <li>Send you a confirmation email</li>
+      <li>Send you a confirmation email or API response</li>
+      <li>Provide a tracking URL and confirmation code</li>
       <li>Begin the deletion process immediately</li>
       <li>Complete deletion within <strong>48 hours</strong></li>
       <li>Send you a final confirmation when complete</li>
     </ul>
+    
+    <div style="background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px;">
+      <strong>API Response Format:</strong><br>
+      <code>{ url: "https://ekramy-ai.online/delete/[confirmation_code]", confirmation_code: "[unique_code]" }</code>
+    </div>
   </div>
 
   <h2>Deletion Timeline</h2>
@@ -166,6 +174,19 @@
     <li><strong>Partial Deletion:</strong> Request deletion of specific data types only</li>
     <li><strong>Data Correction:</strong> Request updates to inaccurate information</li>
     <li><strong>Usage Limitation:</strong> Request restrictions on how your data is processed</li>
+  </ul>
+
+  <h2>Marketing Preferences (Opt-in/Opt-out)</h2>
+  <p><strong>Marketing Communications:</strong> You have full control over marketing messages:</p>
+  <ul>
+    <li><strong>Opt-in:</strong> Marketing messages require your explicit consent</li>
+    <li><strong>Opt-out:</strong> You can unsubscribe at any time via:</li>
+    <ul>
+      <li>Reply "STOP" to any marketing message</li>
+      <li>Email us at <a href="mailto:ziad@ekramy-ai.online">ziad@ekramy-ai.online</a></li>
+      <li>Use our chatbot command: "unsubscribe marketing"</li>
+    </ul>
+    <li><strong>Immediate Effect:</strong> Opt-out requests are processed within 24 hours</li>
   </ul>
 
   <h2>Data Retention After Deletion Request</h2>
