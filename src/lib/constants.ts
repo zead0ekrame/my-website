@@ -1,6 +1,6 @@
 export const SITE = {
-  brandAr: "إيجي أفريكا للمقاولات",
-  brandEn: "Egy Afreka",
+  brandAr: "إيجي أفريكا",
+  brandEn: "Egy Africa",
   owner: "EKRAMY FOUAAD",
   phone: "+20 106 616 1454",
   emailPrimary: "ziad@ekramy-ai.online",

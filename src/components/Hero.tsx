@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Hero() {
   return (
-    <section className="relative bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-24 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-100 py-24 overflow-hidden">
       {/* Neural Network Background */}
       <div className="absolute inset-0">
         {/* Neural Network Nodes */}
@@ -109,32 +109,29 @@ export default function Hero() {
         </div>
       </div>
       
-      {/* Small Title on the Right Side */}
-      <div className="absolute top-1/2 right-8 transform -translate-y-1/2 z-20">
-        <div className="text-right">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-800 leading-tight">
-            حلول الذكاء الاصطناعي
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mt-1">
-              في الوطن العربي
-            </span>
+      {/* Small Title on the Right Side (decorative on large screens only) */}
+      <div className="hidden lg:block absolute top-28 right-8 z-0 pointer-events-none">
+        <div className="text-right opacity-50 max-w-lg">
+          <h1 className="text-2xl md:text-4xl font-extrabold text-slate-800 leading-tight tracking-tight">
+            إيجي أفريكا — حلول ذكاء اصطناعي عملية
           </h1>
         </div>
       </div>
       
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center" style={{ zIndex: 10 }}>
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-5xl mx-auto">
           {/* Subtitle */}
-          <p className="text-lg md:text-xl text-slate-600 mb-12 leading-relaxed max-w-3xl mx-auto">
-            نقدم حلول ذكية ومتطورة لتحويل أعمالك إلى المستقبل
+          <p className="text-lg md:text-xl text-slate-700 mb-12 leading-relaxed max-w-3xl mx-auto">
+            حلول عملية بالذكاء الاصطناعي بتصميم حديث وتجربة سلسة.
           </p>
           
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Link href="/services" className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+            <Link href="/services" className="group relative px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
               <span className="relative z-10">استكشف خدماتنا</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-emerald-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
-            <Link href="/book" className="px-8 py-4 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-200 hover:border-blue-300 hover:text-blue-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+            <Link href="/book" className="px-8 py-4 bg-white text-slate-700 font-semibold rounded-xl border-2 border-slate-200 hover:border-emerald-300 hover:text-emerald-600 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
               احجز استشارة مجانية
             </Link>
           </div>

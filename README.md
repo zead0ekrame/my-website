@@ -1,4 +1,4 @@
-# إيجي أفريكا للمقاولات - حلول الذكاء الاصطناعي
+# إيجي أفريكا (Egy Africa) - حلول الذكاء الاصطناعي
 
 موقع احترافي لعرض خدمات الذكاء الاصطناعي والتسويق الإلكتروني مع بوت ذكي متصل بـ OpenRouter AI.
 
@@ -14,7 +14,7 @@
 
 - **Frontend:** Next.js 14, React 18, TypeScript
 - **Styling:** Tailwind CSS
-- **AI Chatbot:** OpenRouter API (DeepSeek R1)
+- **AI Chatbot:** OpenRouter API (Qwen 2.5 VL 32B)
 - **Deployment:** Render, Docker
 
 ## 📋 المتطلبات
@@ -40,7 +40,7 @@ npm install
 أنشئ ملف `.env.local`:
 ```bash
 OPENROUTER_API_KEY=your_api_key_here
-OPENROUTER_MODEL=deepseek/deepseek-r1-0528:free
+OPENROUTER_MODEL=qwen/qwen2.5-vl-32b-instruct:free
 OPENROUTER_API_URL=https://openrouter.ai/api/v1/chat/completions
 ```
 
@@ -81,7 +81,7 @@ git push origin main
 ### 3. إعداد متغيرات البيئة
 ```
 OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
-OPENROUTER_MODEL=deepseek/deepseek-r1-0528:free
+OPENROUTER_MODEL=qwen/qwen2.5-vl-32b-instruct:free
 OPENROUTER_API_URL=https://openrouter.ai/api/v1/chat/completions
 ```
 

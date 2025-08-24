@@ -3,7 +3,11 @@ import { SITE } from '../lib/constants';
 
 export default function Footer() {
   return (
-    <footer className="bg-textDark text-white py-16">
+    <footer className="bg-textDark text-white py-16 relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 opacity-10">
+        <div className="absolute -top-10 -left-10 w-72 h-72 bg-emerald-500 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-cyan-500 rounded-full blur-3xl"></div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}

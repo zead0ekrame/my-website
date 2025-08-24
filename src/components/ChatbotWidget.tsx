@@ -1,18 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SITE } from '../lib/constants';
-import { processUserMessage, OpenRouterMessage } from '../lib/deepseek-api';
+import { processUserMessage, OpenRouterMessage } from '../lib/chat-api';
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: 'أهلاً وسهلاً! كيف يمكنني مساعدتك اليوم؟', isBot: true }
+    { id: 1, text: 'أهلاً بيك يا صديقي 👋 أنا مساعد إيجي أفريكا. أقدر أساعدك في المقاولات، التسويق الإلكتروني، والذكاء الاصطناعي. تحب نبدأ بإيه؟', isBot: true }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<OpenRouterMessage[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const handleBotClick = () => {
     setIsOpen(!isOpen);
@@ -81,11 +84,30 @@ export default function ChatbotWidget() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !isLoading) {
+      e.preventDefault();
       handleSendMessage();
     }
   };
+
+  // Auto focus input when opening chat
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Auto scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    } else if (messagesContainerRef.current) {
+      const el = messagesContainerRef.current;
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages, isLoading, isOpen]);
 
   const handleQuickAction = async (action: string) => {
     if (isLoading) return;
@@ -144,7 +166,7 @@ export default function ChatbotWidget() {
       
       {/* Chat Bot Interface */}
       {isOpen && (
-        <div className="absolute bottom-full right-0 mb-4 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="absolute bottom-full right-0 mb-4 w-80 md:w-96 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80 rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
           {/* Bot Header */}
           <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 px-4 py-3 text-white">
             <div className="flex items-center justify-between">
@@ -169,7 +191,7 @@ export default function ChatbotWidget() {
           </div>
           
           {/* Chat Messages */}
-          <div className="h-64 overflow-y-auto p-4 space-y-3">
+          <div ref={messagesContainerRef} className="h-64 overflow-y-auto p-4 space-y-3 scroll-smooth">
             {messages.map((message) => (
               <div key={message.id} className={`flex items-start space-x-2 space-x-reverse ${message.isBot ? '' : 'justify-end'}`}>
                 {message.isBot && (
@@ -177,7 +199,7 @@ export default function ChatbotWidget() {
                     <span className="text-xs">🤖</span>
                   </div>
                 )}
-                <div className={`rounded-lg px-3 py-2 max-w-xs ${message.isBot ? 'bg-slate-100 text-slate-700' : 'bg-emerald-500 text-white'}`}>
+                <div className={`rounded-xl px-3 py-2 max-w-xs shadow ${message.isBot ? 'bg-slate-100 text-slate-700' : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'}`}>
                   <p className="text-sm">{message.text}</p>
                 </div>
                 {!message.isBot && (
@@ -187,6 +209,7 @@ export default function ChatbotWidget() {
                 )}
               </div>
             ))}
+            <div ref={messagesEndRef} />
             
             {/* Loading Indicator */}
             {isLoading && (
@@ -227,10 +250,11 @@ export default function ChatbotWidget() {
             {/* Input Field */}
             <div className="flex space-x-2 space-x-reverse">
               <input 
+                ref={inputRef}
                 type="text" 
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 placeholder="اكتب رسالتك هنا..."
                 disabled={isLoading}
                 className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
