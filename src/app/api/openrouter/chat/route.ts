@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { messages, model, temperature, max_tokens, stream } = body;
+    const { messages, model, temperature, max_tokens, stream, system } = body;
 
     // OpenRouter API endpoint
     const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
     let systemPrompt = '';
     let maxTokens = 120;
     
-    if (isFirstQuestion) {
+    if (system && typeof system === 'string') {
+      systemPrompt = system;
+      maxTokens = 120;
+    } else if (isFirstQuestion) {
       if (isGreeting) {
         systemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. رد على التحية بلطف وود، استخدم رموز تعبيرية خفيفة 😊. اطرح سؤالاً ودوداً لمواصلة النقاش. لا تتجاوز 80 توكن.`;
         maxTokens = 80;
