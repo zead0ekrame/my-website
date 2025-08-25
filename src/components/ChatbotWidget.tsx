@@ -8,7 +8,7 @@ export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: 'أهلاً بيك يا صديقي 👋 أنا مساعد إيجي أفريكا. أقدر أساعدك في المقاولات، التسويق الإلكتروني، والذكاء الاصطناعي. تحب نبدأ بإيه؟', isBot: true }
+    { id: 1, text: 'أهلاً بيك يا صديقي 👋 أنا مساعد إيجي أفريكا. أقدر أساعدك في التسويق الإلكتروني والذكاء الاصطناعي. تحب نبدأ بإيه؟', isBot: true }
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);

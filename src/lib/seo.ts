@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 
 export const defaultMetadata: Metadata = {
   title: {
-    default: 'حلول ذكاء اصطناعي وبوت ماسنجر | إيجي إفريقيا للمقاولات',
-    template: '%s | إيجي إفريقيا للمقاولات'
+    default: 'حلول ذكاء اصطناعي وبوت ماسنجر | إيجي أفريكا',
+    template: '%s | إيجي أفريكا'
   },
   description: 'خدمة البوت الذكي كخدمة أساسية + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',
   keywords: [
@@ -17,8 +17,7 @@ export const defaultMetadata: Metadata = {
     'مصر',
     'السعودية',
     'الخليج',
-    'إيجي إفريقيا',
-    'مقاولات',
+    'إيجي أفريكا',
     'خدمات رقمية',
     'بوت ذكي',
     'ميتا',
@@ -26,7 +25,7 @@ export const defaultMetadata: Metadata = {
   ],
   authors: [{ name: 'EKRAMY FOUAAD' }],
   creator: 'EKRAMY FOUAAD',
-  publisher: 'إيجي إفريقيا للمقاولات',
+  publisher: 'إيجي أفريكا',
   formatDetection: {
     email: false,
     address: false,
@@ -43,21 +42,21 @@ export const defaultMetadata: Metadata = {
     type: 'website',
     locale: 'ar_AR',
     url: 'https://ekramy-ai.online',
-    title: 'حلول ذكاء اصطناعي وبوت ماسنجر | إيجي إفريقيا للمقاولات',
+    title: 'حلول ذكاء اصطناعي وبوت ماسنجر | إيجي أفريكا',
     description: 'خدمة البوت الذكي كخدمة أساسية + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',
-    siteName: 'إيجي إفريقيا للمقاولات',
+    siteName: 'إيجي أفريكا',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'إيجي إفريقيا للمقاولات - حلول ذكاء اصطناعي وبوت ماسنجر',
+        alt: 'إيجي أفريكا - حلول ذكاء اصطناعي وبوت ماسنجر',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'حلول ذكاء اصطناعي وبوت ماسنجر | إيجي إفريقيا للمقاولات',
+    title: 'حلول ذكاء اصطناعي وبوت ماسنجر | إيجي أفريكا',
     description: 'خدمة البوت الذكي كخدمة أساسية + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',
     images: ['/og-image.png'],
   },
@@ -105,7 +104,7 @@ export function generateMetadata(
 export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "إيجي إفريقيا للمقاولات",
+  "name": "إيجي أفريكا",
   "alternateName": "Egy Africa",
   "url": "https://ekramy-ai.online",
   "logo": "https://ekramy-ai.online/logo.svg",
@@ -128,7 +127,7 @@ export const organizationSchema = {
   },
   "sameAs": [],
   "foundingDate": "2024",
-  "description": "شركة مقاولات مصرية تقدم حلول ذكاء اصطناعي وبوت ماسنجر، إلى جانب خدمات التسويق الإلكتروني والميديا والتصميم",
+  "description": "شركة تقدم حلول ذكاء اصطناعي وبوت ماسنجر، إلى جانب خدمات التسويق الإلكتروني والميديا والتصميم",
   "areaServed": [
     {
       "@type": "Country",
@@ -156,9 +155,9 @@ export const organizationSchema = {
 export const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  "name": "إيجي إفريقيا للمقاولات",
+  "name": "إيجي أفريكا",
   "image": "https://ekramy-ai.online/logo.svg",
-  "description": "شركة مقاولات مصرية تقدم حلول ذكاء اصطناعي وبوت ماسنجر",
+  "description": "شركة تقدم حلول ذكاء اصطناعي وبوت ماسنجر",
   "url": "https://ekramy-ai.online",
   "telephone": "+201066161454",
   "address": {
