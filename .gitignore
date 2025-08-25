@@ -108,7 +108,6 @@ jspm_packages/
 .tern-port
 
 # Prisma
-/generated/prisma
 /prisma/dev.db
 /prisma/dev.db-journal
 

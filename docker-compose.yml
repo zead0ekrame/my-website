@@ -31,10 +31,10 @@ services:
     environment:
       - NODE_ENV=production
       - DATABASE_URL=mysql://privacy_user:your_secure_user_password@mysql:3306/privacy_meta
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@privacy-meta.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-ChangeThisPassword123!}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
     depends_on:
       - mysql
     networks:

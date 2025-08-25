@@ -44,11 +44,6 @@ const nextConfig = {
     CUSTOM_KEY: 'my-value',
   },
 
-  // Experimental features
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client']
-  },
-
   // Webpack configuration
   webpack: (config, { isServer }) => {
     if (!isServer) {
