@@ -1,9 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '../../../../lib/db';
+import { chatSchema } from '../../../../lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { messages, model, temperature, max_tokens, stream, system } = body;
+    
+    // Validate input
+    const validationResult = chatSchema.safeParse(body);
+    if (!validationResult.success) {
+      return NextResponse.json({ 
+        error: 'Invalid input', 
+        details: validationResult.error.errors 
+      }, { status: 400 });
+    }
+    
+    const { messages, model, temperature, max_tokens, stream, system, clientId, sessionId } = validationResult.data;
 
     // OpenRouter API endpoint
     const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL || 'https://openrouter.ai/api/v1/chat/completions';
@@ -29,56 +41,71 @@ export async function POST(request: NextRequest) {
     const isCasual = /(تمام|ماشي|أوكي|حلو|ممتاز|كويس|عظيم)/i.test(lastMessage);
     
     // إعدادات ذكية للتفاعل
-    let systemPrompt = '';
+    let computedSystemPrompt = '';
     let maxTokens = 120;
     
-    if (system && typeof system === 'string') {
-      systemPrompt = system;
-      maxTokens = 120;
-    } else if (isFirstQuestion) {
+    if (isFirstQuestion) {
       if (isGreeting) {
-        systemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. رد على التحية بلطف وود، استخدم رموز تعبيرية خفيفة 😊. اطرح سؤالاً ودوداً لمواصلة النقاش. لا تتجاوز 80 توكن.`;
+        computedSystemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. رد على التحية بلطف وود، استخدم رموز تعبيرية خفيفة 😊. اطرح سؤالاً ودوداً لمواصلة النقاش. لا تتجاوز 80 توكن.`;
         maxTokens = 80;
       } else {
-        systemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. أجب على السؤال بإيجاز (2-3 جملة) واطرح سؤالاً واحداً لمواصلة النقاش. استخدم رموز تعبيرية خفيفة 😊. لا تتجاوز 100 توكن.`;
+        computedSystemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. أجب على السؤال بإيجاز (2-3 جملة) واطرح سؤالاً واحداً لمواصلة النقاش. استخدم رموز تعبيرية خفيفة 😊. لا تتجاوز 100 توكن.`;
         maxTokens = 100;
       }
     } else {
       if (isAmbiguous) {
-        systemPrompt = `أنت مساعد ودود ومحب. العميل كتب نص غير واضح، رد عليه بلطف واطلب التوضيح بشكل ودود 😅. لا تتجاوز 60 توكن.`;
+        computedSystemPrompt = `أنت مساعد ودود ومحب. العميل كتب نص غير واضح، رد عليه بلطف واطلب التوضيح بشكل ودود 😅. لا تتجاوز 60 توكن.`;
         maxTokens = 60;
       } else if (isPriceQuestion) {
-        systemPrompt = `أنت مساعد ودود ومحب. العميل يسأل عن السعر، فهم قصدك 👍 واشرح أن الأسعار تختلف حسب الخدمة. اطلب تفاصيل أكثر. لا تتجاوز 100 توكن.`;
+        computedSystemPrompt = `أنت مساعد ودود ومحب. العميل يسأل عن السعر، فهم قصدك 👍 واشرح أن الأسعار تختلف حسب الخدمة. اطلب تفاصيل أكثر. لا تتجاوز 100 توكن.`;
         maxTokens = 100;
       } else if (isCasual) {
-        systemPrompt = `أنت مساعد ودود ومحب. العميل كتب رد عادي، رده عليه بنفس الأسلوب الودود 😊. لا تتجاوز 80 توكن.`;
+        computedSystemPrompt = `أنت مساعد ودود ومحب. العميل كتب رد عادي، رده عليه بنفس الأسلوب الودود 😊. لا تتجاوز 80 توكن.`;
         maxTokens = 80;
       } else {
-        systemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. أجب على السؤال بإيجاز (3-4 جملة) واطرح سؤالاً آخر لتعميق النقاش. ركز على جانب واحد فقط. استخدم رموز تعبيرية خفيفة 😊. لا تتجاوز 120 توكن.`;
+        computedSystemPrompt = `أنت مساعد ودود ومحب من إيجي أفريكا. أجب على السؤال بإيجاز (3-4 جملة) واطرح سؤالاً آخر لتعميق النقاش. ركز على جانب واحد فقط. استخدم رموز تعبيرية خفيفة 😊. لا تتجاوز 120 توكن.`;
         maxTokens = 120;
       }
     }
     
     // إضافة سياق المحادثة
     if (conversationHistory.length > 1) {
-      systemPrompt += `\n\nتذكر: أنت في نقاش تفاعلي مستمر. لا تبدأ من جديد، ربط ردك بالسياق السابق.`;
+      computedSystemPrompt += `\n\nتذكر: أنت في نقاش تفاعلي مستمر. لا تبدأ من جديد، ربط ردك بالسياق السابق.`;
+    }
+
+    // قراءة إعدادات العميل إن وُجد clientId
+    const queryClientId = request.nextUrl.searchParams.get('clientId');
+    const clientIdentifier = clientId || queryClientId || null;
+    let client: any = null;
+    if (clientIdentifier) {
+      client = await prisma.client.findFirst({
+        where: {
+          OR: [
+            { id: clientIdentifier },
+            { slug: clientIdentifier }
+          ]
+        }
+      });
     }
 
     // إعداد الطلب لـ OpenRouter مع الإعدادات الذكية
-    const selectedModel = model || process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free';
+    const fallbackModel = process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free';
+    const selectedModel = model || client?.model || fallbackModel;
+    const finalTemperature = typeof temperature === 'number' ? temperature : (client?.temperature ?? 0.7);
+    const finalSystemPrompt = typeof system === 'string' ? system : (client?.systemPrompt ?? computedSystemPrompt);
     const openrouterRequest = {
       model: selectedModel,
       messages: [
         {
           role: 'system',
-          content: systemPrompt
+          content: finalSystemPrompt
         },
         ...conversationHistory.map((msg: any) => ({
           role: msg.role,
           content: msg.content
         }))
       ],
-      temperature: 0.7, // زيادة العشوائية للود
+      temperature: finalTemperature, // زيادة العشوائية للود
       top_p: 0.9, // تنويع الإجابات
       max_tokens: maxTokens,
       stream: false,
@@ -93,16 +120,41 @@ export async function POST(request: NextRequest) {
       messageType: { isGreeting, isAmbiguous, isPriceQuestion, isCasual }
     });
 
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-        'X-Title': 'Egy Africa AI'
-      },
-      body: JSON.stringify(openrouterRequest)
-    });
+    // Token limit check per client (monthly)
+    if (client?.tokenLimitMonthly && client.tokenLimitMonthly > 0) {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const agg = await (prisma as any).usageLog.aggregate({
+        where: { clientId: client.id, createdAt: { gte: monthStart } },
+        _sum: { totalTokens: true }
+      });
+      const used = agg._sum.totalTokens || 0;
+      if (used >= client.tokenLimitMonthly) {
+        return NextResponse.json({ error: 'Token limit exceeded for this client' }, { status: 429 });
+      }
+    }
+
+    const callModel = async (modelName: string) => {
+      return fetch(OPENROUTER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+          'X-Title': 'Egy Africa AI'
+        },
+        body: JSON.stringify({ ...openrouterRequest, model: modelName })
+      });
+    };
+
+    let response = await callModel(selectedModel);
+    if (!response.ok) {
+      console.warn('Primary model failed, trying fallback model...');
+      const fallbackResp = await callModel(fallbackModel);
+      if (fallbackResp.ok) {
+        response = fallbackResp;
+      }
+    }
 
     if (!response.ok) {
       const errorData = await response.text();
@@ -114,6 +166,46 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
+
+    // Persist conversation and usage
+    try {
+      const session = sessionId || request.nextUrl.searchParams.get('sessionId') || (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`);
+      let conversation = await (prisma as any).conversation.findFirst({
+        where: {
+          sessionId: session,
+          clientId: client?.id ?? null,
+        }
+      });
+      if (!conversation) {
+        conversation = await (prisma as any).conversation.create({ data: { sessionId: session, clientId: client?.id ?? null } });
+      }
+
+      const assistantContent = data?.choices?.[0]?.message?.content || '';
+      const ops: any[] = [];
+      if (lastMessage) {
+        ops.push((prisma as any).message.create({ data: { conversationId: conversation.id, role: 'user', content: lastMessage } }));
+      }
+      if (assistantContent) {
+        ops.push((prisma as any).message.create({ data: { conversationId: conversation.id, role: 'assistant', content: assistantContent } }));
+      }
+      const usage = data?.usage;
+      if (usage) {
+        ops.push((prisma as any).usageLog.create({
+          data: {
+            clientId: client?.id ?? null,
+            sessionId: session,
+            model: openrouterRequest.model as string,
+            promptTokens: usage.prompt_tokens || 0,
+            completionTokens: usage.completion_tokens || 0,
+            totalTokens: usage.total_tokens || 0,
+          }
+        }));
+      }
+      await Promise.all(ops);
+    } catch (persistErr) {
+      console.warn('Persist error (non-fatal):', persistErr);
+    }
+
     return NextResponse.json(data);
 
   } catch (error) {

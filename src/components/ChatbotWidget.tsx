@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SITE } from '../lib/constants';
-import { processUserMessage, OpenRouterMessage } from '../lib/chat-api';
+import { processUserMessage, OpenRouterMessage, streamUserMessage } from '../lib/chat-api';
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +13,12 @@ export default function ChatbotWidget() {
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [conversationHistory, setConversationHistory] = useState<OpenRouterMessage[]>([]);
+  const [activeClient, setActiveClient] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [usage, setUsage] = useState<{ total: number } | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -42,22 +48,39 @@ export default function ChatbotWidget() {
         };
 
         // معالجة الرسالة عبر OpenRouter
-        const result = await processUserMessage(userMessage, conversationHistory);
-        
-        // إضافة رد البوت
-        const botMessage = {
-          id: messages.length + 2,
-          text: result.response,
-          isBot: true
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
+        const baseId = messages.length + 2;
+        setMessages(prev => [...prev, { id: baseId, text: '', isBot: true }]);
+        let finalText = '';
+        try {
+          const controller = new AbortController();
+          abortRef.current = controller;
+          setIsStreaming(true);
+          const startedAt = performance.now();
+          finalText = await streamUserMessage(
+            userMessage,
+            conversationHistory,
+            sessionId || undefined,
+            (delta) => {
+              setMessages(prev => prev.map(m => m.id === baseId ? { ...m, text: (m.text + delta) } : m));
+            },
+            { signal: controller.signal }
+          );
+          setLatencyMs(Math.round(performance.now() - startedAt));
+        } catch (e) {
+          // fallback لو البث فشل
+          const result = await processUserMessage(userMessage, conversationHistory, sessionId || undefined);
+          finalText = result.response;
+          setMessages(prev => prev.map(m => m.id === baseId ? { ...m, text: finalText } : m));
+        } finally {
+          setIsStreaming(false);
+          abortRef.current = null;
+        }
 
         // تحديث تاريخ المحادثة إذا كان يجب إضافته
-        if (result.shouldAddToHistory) {
+        if (finalText) {
           const botOpenRouterMessage: OpenRouterMessage = {
             role: 'assistant',
-            content: result.response
+            content: finalText
           };
           
           setConversationHistory(prev => [
@@ -98,6 +121,43 @@ export default function ChatbotWidget() {
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  // Load active client from localStorage
+  useEffect(() => {
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('activeClientId') : null;
+      if (stored) setActiveClient(stored);
+    } catch {}
+  }, []);
+
+  // Ensure sessionId
+  useEffect(() => {
+    try {
+      if (typeof window === 'undefined') return;
+      let sid = localStorage.getItem('chatSessionId');
+      if (!sid) {
+        sid = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem('chatSessionId', sid);
+      }
+      setSessionId(sid);
+    } catch {}
+  }, []);
+
+  // Fetch usage summary
+  useEffect(() => {
+    const fetchUsage = async () => {
+      if (!sessionId) return;
+      const params = new URLSearchParams();
+      params.set('sessionId', sessionId);
+      if (activeClient) params.set('clientId', activeClient);
+      try {
+        const res = await fetch(`/api/usage/summary?${params.toString()}`);
+        const d = await res.json();
+        if (res.ok) setUsage({ total: d.totalTokens || 0 });
+      } catch {}
+    };
+    fetchUsage();
+  }, [sessionId, activeClient, messages.length]);
 
   // Auto scroll to bottom when messages change
   useEffect(() => {
@@ -176,7 +236,10 @@ export default function ChatbotWidget() {
                 </div>
                 <div>
                   <div className="font-semibold text-sm">البوت الذكي</div>
-                  <div className="text-xs text-emerald-100">متصل بـ OpenRouter AI</div>
+                  <div className="text-xs text-emerald-100">
+                    {activeClient ? `العميل: ${activeClient}` : 'متصل بـ OpenRouter AI'}
+                    {usage ? ` • Tokens: ${usage.total}` : ''}
+                  </div>
                 </div>
               </div>
               <button 
@@ -202,6 +265,13 @@ export default function ChatbotWidget() {
                 <div className={`rounded-xl px-3 py-2 max-w-xs shadow ${message.isBot ? 'bg-slate-100 text-slate-700' : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'}`}>
                   <p className="text-sm">{message.text}</p>
                 </div>
+                <button
+                  onClick={() => navigator.clipboard.writeText(message.text)}
+                  className="ml-1 text-xs text-slate-400 hover:text-slate-600"
+                  title="نسخ"
+                >
+                  ⎘
+                </button>
                 {!message.isBot && (
                   <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-xs text-white">👤</span>
@@ -230,6 +300,18 @@ export default function ChatbotWidget() {
           
           {/* Quick Actions */}
           <div className="p-4 border-t border-slate-200">
+            <div className="flex items-center justify-between mb-3 text-xs text-slate-500">
+              <div>{isStreaming ? 'يكتب الآن…' : latencyMs !== null ? `زمن الاستجابة: ${latencyMs}ms` : ''}</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { if (abortRef.current) { abortRef.current.abort(); } }}
+                  disabled={!isStreaming}
+                  className="px-2 py-1 border rounded-md disabled:opacity-50"
+                >
+                  إيقاف
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
               <button 
                 onClick={() => handleQuickAction('ai')}

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   description: 'حلول ذكاء اصطناعي متكاملة + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',
   keywords: 'ذكاء اصطناعي، بوت ماسنجر، تسويق إلكتروني، مونتاج، جرافيك، تصوير، UGC، مصر، السعودية، الخليج',
   authors: [{ name: 'EKRAMY FOUAAD' }],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
       openGraph: {
       title: 'حلول الذكاء الاصطناعي في الوطن العربي | إيجي أفريكا',
       description: 'حلول ذكاء اصطناعي متكاملة + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',

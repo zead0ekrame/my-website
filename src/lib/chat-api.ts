@@ -75,16 +75,24 @@ ${WEBSITE_CONTEXT.companyInfo}
 
 export async function sendMessageToOpenRouter(
   userMessage: string,
-  conversationHistory: OpenRouterMessage[] = []
+  conversationHistory: OpenRouterMessage[] = [],
+  sessionId?: string
 ): Promise<string> {
   try {
     const messages: OpenRouterMessage[] = [
-      { role: 'system', content: createSystemMessage() },
+      // نترك إنشاء رسالة الـ system للباك-إند حسب clientId
       ...conversationHistory,
       { role: 'user', content: userMessage }
     ];
 
-    const response = await fetch('/api/openrouter/chat', {
+    let clientId: string | null = null;
+    try {
+      clientId = typeof window !== 'undefined' ? localStorage.getItem('activeClientId') : null;
+    } catch {}
+
+    const url = clientId ? `/api/openrouter/chat?clientId=${encodeURIComponent(clientId)}` : '/api/openrouter/chat';
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -92,7 +100,9 @@ export async function sendMessageToOpenRouter(
         model: process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free',
         temperature: 0.7,
         max_tokens: 1000,
-        stream: false
+        stream: false,
+        ...(clientId ? { clientId } : {}),
+        ...(sessionId ? { sessionId } : {})
       })
     });
 
@@ -113,7 +123,8 @@ export async function sendMessageToOpenRouter(
 
 export async function processUserMessage(
   userMessage: string,
-  conversationHistory: OpenRouterMessage[] = []
+  conversationHistory: OpenRouterMessage[] = [],
+  sessionId?: string
 ): Promise<{ response: string; shouldAddToHistory: boolean }> {
   try {
     const normalized = userMessage.trim().toLowerCase();
@@ -211,12 +222,71 @@ export async function processUserMessage(
       return { response: pick(byeReplies), shouldAddToHistory: false };
     }
 
-    const aiResponse = await sendMessageToOpenRouter(userMessage, conversationHistory);
+    // Default non-stream fallback
+    const aiResponse = await sendMessageToOpenRouter(userMessage, conversationHistory, sessionId);
     return { response: aiResponse, shouldAddToHistory: true };
   } catch (error) {
     console.error('Error processing user message:', error);
     return { response: 'عذراً، حدث خطأ. يمكنك التواصل معنا عبر واتساب للحصول على مساعدة فورية.', shouldAddToHistory: false };
   }
+}
+
+export async function streamUserMessage(
+  userMessage: string,
+  conversationHistory: OpenRouterMessage[] = [],
+  sessionId: string | undefined,
+  onDelta: (chunk: string) => void,
+  options?: { signal?: AbortSignal }
+): Promise<string> {
+  let clientId: string | null = null;
+  try {
+    clientId = typeof window !== 'undefined' ? localStorage.getItem('activeClientId') : null;
+  } catch {}
+  const params = new URLSearchParams();
+  if (clientId) params.set('clientId', clientId);
+  if (sessionId) params.set('sessionId', sessionId);
+
+  const messages: OpenRouterMessage[] = [
+    ...conversationHistory,
+    { role: 'user', content: userMessage }
+  ];
+
+  const res = await fetch(`/api/openrouter/chat/stream?${params.toString()}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+    body: JSON.stringify({ messages }),
+    signal: options?.signal
+  });
+  if (!res.ok || !res.body) {
+    throw new Error(`Stream error: ${res.status}`);
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let full = '';
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split('\n\n');
+    buffer = parts.pop() || '';
+    for (const part of parts) {
+      if (!part.startsWith('data:')) continue;
+      const json = part.slice(5).trim();
+      if (!json || json === '[DONE]') continue;
+      try {
+        const evt = JSON.parse(json);
+        const delta: string = evt?.choices?.[0]?.delta?.content || evt?.choices?.[0]?.message?.content || '';
+        if (delta) {
+          full += delta;
+          onDelta(delta);
+        }
+      } catch {
+        // ignore parse errors of partial chunks
+      }
+    }
+  }
+  return full;
 }
 
 /**

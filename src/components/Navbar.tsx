@@ -38,9 +38,14 @@ export default function Navbar() {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Link href="/contact" className="btn-primary">
-              ابدأ الآن
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/login" className="px-4 py-2 text-sm text-textDark hover:text-primary rounded-lg hover:bg-slate-50 transition-colors">
+                تسجيل الدخول
+              </Link>
+              <Link href="/contact" className="btn-primary">
+                ابدأ الآن
+              </Link>
+            </div>
           </div>
 
           {/* Mobile menu button */}
@@ -77,7 +82,10 @@ export default function Navbar() {
             <Link href="/book" className="text-textDark hover:text-primary block px-3 py-2 rounded-md text-base font-medium">
               احجز ميتنغ
             </Link>
-            <div className="pt-4">
+            <div className="pt-4 space-y-2">
+              <Link href="/login" className="block w-full text-center px-3 py-2 rounded-md border text-textDark hover:text-primary">
+                تسجيل الدخول
+              </Link>
               <Link href="/contact" className="btn-primary w-full text-center block">
                 ابدأ الآن
               </Link>
