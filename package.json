@@ -15,8 +15,7 @@
     "docker:run": "docker run -p 3000:3000 --env-file .env privacy-meta",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",

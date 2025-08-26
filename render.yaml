@@ -3,6 +3,7 @@ services:
     name: privacy-meta
     env: node
     plan: starter
+    dockerfilePath: ./Dockerfile.secure
     buildCommand: |
       npm ci
       npx prisma generate

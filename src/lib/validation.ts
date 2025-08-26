@@ -18,5 +18,9 @@ export const chatSchema = z.object({
   })).min(1, 'مطلوب رسالة واحدة على الأقل'),
   model: z.string().optional(),
   temperature: z.number().min(0).max(2).optional(),
-  max_tokens: z.number().min(1).max(4000).optional()
+  max_tokens: z.number().min(1).max(4000).optional(),
+  stream: z.boolean().optional(),
+  system: z.string().optional(),
+  clientId: z.string().optional(),
+  sessionId: z.string().optional()
 });

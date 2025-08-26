@@ -9,18 +9,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon.png', type: 'image/png' }
+      { url: '/icon.svg', type: 'image/svg+xml' }
     ],
     shortcut: '/icon.svg',
-    apple: '/icon.png',
   },
   openGraph: {
     title: 'Privacy Meta - منصة الذكاء الاصطناعي الآمنة',
     description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان',
     type: 'website',
     locale: 'ar_AR',
-    images: ['/icon.png'],
+    images: ['/icon.svg'],
   },
 }
 

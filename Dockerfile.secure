@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -32,6 +32,76 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy package files for npm start
+COPY --from=builder /app/package*.json ./
+
+# Copy prisma for runtime
+COPY --from=builder /app/prisma ./prisma
+
+# Copy environment file if exists
+COPY --from=builder /app/.env* ./
+
+# Copy next config
+COPY --from=builder /app/next.config.js ./
+
+# Copy tailwind config
+COPY --from=builder /app/tailwind.config.js ./
+
+# Copy postcss config
+COPY --from=builder /app/postcss.config.js ./
+
+# Copy typescript config
+COPY --from=builder /app/tsconfig.json ./
+
+# Copy source code
+COPY --from=builder /app/src ./src
+
+# Copy components
+COPY --from=builder /app/components ./components
+
+# Copy lib
+COPY --from=builder /app/lib ./lib
+
+# Copy types
+COPY --from=builder /app/types.d.ts ./
+
+# Copy next env types
+COPY --from=builder /app/next-env.d.ts ./
+
+# Copy middleware
+COPY --from=builder /app/middleware.ts ./
+
+# Copy scripts
+COPY --from=builder /app/scripts ./scripts
+
+# Copy README
+COPY --from=builder /app/README.md ./
+
+# Copy SECURITY
+COPY --from=builder /app/SECURITY.md ./
+
+# Copy README-DOCKER
+COPY --from=builder /app/README-DOCKER.md ./
+
+# Copy docker files
+COPY --from=builder /app/docker-compose.yml ./
+COPY --from=builder /app/Dockerfile* ./
+
+# Copy env example
+COPY --from=builder /app/env.example ./
+
+# Copy render config
+COPY --from=builder /app/render.yaml ./
+
+# Copy docker ignore
+COPY --from=builder /app/.dockerignore ./
+
+# Copy git ignore
+COPY --from=builder /app/.gitignore ./
+
+# Copy git
+COPY --from=builder /app/.git ./
+
 # Copy the public folder
 COPY --from=builder /app/public ./public
 
@@ -50,4 +120,4 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
