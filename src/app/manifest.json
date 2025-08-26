@@ -1,0 +1,27 @@
+{
+  "name": "Privacy Meta - منصة الذكاء الاصطناعي الآمنة",
+  "short_name": "Privacy Meta",
+  "description": "منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#764ba2",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -2,16 +2,25 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'حلول الذكاء الاصطناعي في الوطن العربي | إيجي أفريكا',
-  description: 'حلول ذكاء اصطناعي متكاملة + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',
-  keywords: 'ذكاء اصطناعي، بوت ماسنجر، تسويق إلكتروني، مونتاج، جرافيك، تصوير، UGC، مصر، السعودية، الخليج',
-  authors: [{ name: 'EKRAMY FOUAAD' }],
+  title: 'Privacy Meta - منصة الذكاء الاصطناعي الآمنة',
+  description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان. واجهة دردشة ذكية مع حماية متقدمة للبيانات.',
+  keywords: 'ذكاء اصطناعي، خصوصية، أمان، chatbot، AI، حماية البيانات، منصة آمنة',
+  authors: [{ name: 'Privacy Meta Team' }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-      openGraph: {
-      title: 'حلول الذكاء الاصطناعي في الوطن العربي | إيجي أفريكا',
-      description: 'حلول ذكاء اصطناعي متكاملة + تسويق إلكتروني وميديا وUGC. نخدم مصر والسعودية والخليج.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', type: 'image/png' }
+    ],
+    shortcut: '/icon.svg',
+    apple: '/icon.png',
+  },
+  openGraph: {
+    title: 'Privacy Meta - منصة الذكاء الاصطناعي الآمنة',
+    description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان',
     type: 'website',
     locale: 'ar_AR',
+    images: ['/icon.png'],
   },
 }
 
@@ -23,6 +32,8 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#764ba2" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
