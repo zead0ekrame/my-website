@@ -1,0 +1,128 @@
+{
+  "name": "Support Bot Template",
+  "description": "بوت دعم فني للرد على استفسارات العملاء عبر WhatsApp و Messenger",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "trigger",
+      "position": [100, 100],
+      "data": {
+        "name": "Start",
+        "type": "trigger"
+      }
+    },
+    {
+      "id": "intent-detector",
+      "type": "simpleIntentDetector",
+      "position": [300, 100],
+      "data": {
+        "name": "Simple Intent Detection",
+        "patterns": [
+          {
+            "intent": "greeting",
+            "pattern": "مرحبا|السلام عليكم|اهلا|صباح الخير",
+            "confidence": 0.9,
+            "response": "مرحباً! كيف أقدر أساعدك اليوم؟ 😊"
+          },
+          {
+            "intent": "service_inquiry",
+            "pattern": "خدمات|ماذا تقدمون|عندكم ايه",
+            "confidence": 0.8,
+            "response": "نحن نقدم خدمات شات بوت للمراسلات:\n• WhatsApp\n• Messenger\n• Instagram\n\nأي خدمة تريد معرفة المزيد عنها؟"
+          },
+          {
+            "intent": "pricing",
+            "pattern": "السعر|التكلفة|كم يكلف|الخطة",
+            "confidence": 0.8,
+            "response": "الأسعار تبدأ من:\n• الخطة الأساسية: 99$ شهرياً\n• الخطة المتقدمة: 199$ شهرياً\n• الخطة الاحترافية: 299$ شهرياً\n\nتريد عرض مفصل؟"
+          },
+          {
+            "intent": "contact",
+            "pattern": "تواصل|اتصل|رقم|ايميل",
+            "confidence": 0.8,
+            "response": "يمكنك التواصل معنا:\n📧 info@privacy-meta.com\n📱 +20 123 456 789\n🌐 www.privacy-meta.com"
+          }
+        ]
+      }
+    },
+    {
+      "id": "llm-node",
+      "type": "openAIAssistant",
+      "position": [500, 100],
+      "data": {
+        "name": "AI Assistant",
+        "model": "gpt-4o-mini",
+        "temperature": 0.7,
+        "maxTokens": 500,
+        "systemPrompt": "أنت مساعد ودود لشركة Privacy Meta المتخصصة في خدمات شات بوت للمراسلات (WhatsApp, Messenger, Instagram).\n\nدورك:\n1. الرد على استفسارات العملاء باحترافية\n2. شرح الخدمات بوضوح\n3. مساعدة في اختيار الخطة المناسبة\n4. توجيه العميل للتواصل عند الحاجة\n\nأجب باللغة العربية دائماً وبأسلوب ودود ومهني."
+      }
+    },
+    {
+      "id": "response-router",
+      "type": "responseRouter",
+      "position": [700, 100],
+      "data": {
+        "name": "Response Router",
+        "rules": [
+          {
+            "condition": "intent == 'greeting'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'service_inquiry'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'pricing'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'contact'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "default",
+            "response": "llm_response"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output",
+      "type": "output",
+      "position": [900, 100],
+      "data": {
+        "name": "Output",
+        "type": "text"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "start",
+      "target": "intent-detector"
+    },
+    {
+      "source": "intent-detector",
+      "target": "response-router"
+    },
+    {
+      "source": "intent-detector",
+      "target": "llm-node"
+    },
+    {
+      "source": "llm-node",
+      "target": "response-router"
+    },
+    {
+      "source": "response-router",
+      "target": "output"
+    }
+  ],
+  "variables": {
+    "tenant_id": "",
+    "channel": "web",
+    "language": "ar"
+  }
+}
+

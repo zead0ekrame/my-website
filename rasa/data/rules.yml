@@ -1,0 +1,53 @@
+version: "3.1"
+
+rules:
+- rule: Say goodbye anytime the user says goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- rule: Say 'I am a bot' anytime the user challenges
+  steps:
+  - intent: out_of_scope
+  - action: utter_out_of_scope
+
+- rule: Activate the form
+  steps:
+  - intent: booking_request
+  - action: action_booking_handler
+  - active_loop: booking_form
+
+- rule: Submit the form
+  condition:
+  - active_loop: booking_form
+  steps:
+  - action: booking_form
+  - active_loop: null
+  - slot_was_set:
+    - requested_slot: null
+  - action: utter_booking_confirm
+
+- rule: Handle urgent support
+  steps:
+  - intent: urgent_support
+  - action: action_urgent_support_handler
+
+- rule: Handle pricing inquiries
+  steps:
+  - intent: pricing_inquiry
+  - action: utter_pricing_info
+
+- rule: Handle service inquiries
+  steps:
+  - intent: service_inquiry
+  - action: utter_service_info
+
+- rule: Handle general questions with RAG
+  steps:
+  - intent: general_question
+  - action: action_langchain_rag
+
+- rule: Handle payment inquiries with RAG
+  steps:
+  - intent: payment_inquiry
+  - action: action_langchain_rag

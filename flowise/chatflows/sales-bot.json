@@ -1,0 +1,149 @@
+{
+  "name": "Sales Bot Template",
+  "description": "بوت مبيعات لمساعدة العملاء في اختيار الخدمات وحجز المواعيد",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "trigger",
+      "position": [100, 100],
+      "data": {
+        "name": "Start",
+        "type": "trigger"
+      }
+    },
+    {
+      "id": "intent-detector",
+      "type": "simpleIntentDetector",
+      "position": [300, 100],
+      "data": {
+        "name": "Sales Intent Detection",
+        "patterns": [
+          {
+            "intent": "greeting",
+            "pattern": "مرحبا|السلام عليكم|اهلا|صباح الخير",
+            "confidence": 0.9,
+            "response": "مرحباً! أنا هنا لمساعدتك في اختيار أفضل خدمة شات بوت لعملك! 🚀\n\nأي خدمة تريد معرفة المزيد عنها؟"
+          },
+          {
+            "intent": "whatsapp_service",
+            "pattern": "واتساب|whatsapp|واتس",
+            "confidence": 0.9,
+            "response": "ممتاز! خدمة WhatsApp Business API:\n\n✅ ربط مع حساب WhatsApp Business\n✅ ردود تلقائية ذكية\n✅ دعم متعدد اللغات\n✅ إحصائيات مفصلة\n✅ دعم 24/7\n\nالسعر: 149$ شهرياً\n\nتريد تجربة مجانية؟"
+          },
+          {
+            "intent": "messenger_service",
+            "pattern": "ماسينجر|messenger|فيسبوك|facebook",
+            "confidence": 0.9,
+            "response": "رائع! خدمة Facebook Messenger:\n\n✅ ربط مع صفحة Facebook\n✅ ردود ذكية متقدمة\n✅ دعم الصور والفيديوهات\n✅ إحصائيات مفصلة\n✅ دعم متعدد اللغات\n\nالسعر: 129$ شهرياً\n\nتريد عرض تجريبي؟"
+          },
+          {
+            "intent": "instagram_service",
+            "pattern": "انستجرام|instagram|انستا",
+            "confidence": 0.9,
+            "response": "ممتاز! خدمة Instagram Business:\n\n✅ ربط مع حساب Instagram Business\n✅ ردود ذكية على الرسائل\n✅ دعم القصص والمنشورات\n✅ إحصائيات مفصلة\n✅ دعم متعدد اللغات\n\nالسعر: 119$ شهرياً\n\nتريد تجربة مجانية؟"
+          },
+          {
+            "intent": "booking",
+            "pattern": "حجز|موعد|استشارة|مقابلة",
+            "confidence": 0.8,
+            "response": "ممتاز! سأساعدك في حجز موعد استشارة مجانية! 📅\n\nأي يوم يناسبك؟\n• الأحد - الخميس: 9 ص - 6 م\n• الجمعة: 10 ص - 2 م\n• السبت: 10 ص - 4 م\n\nأو يمكنك التواصل مباشرة:\n📧 sales@privacy-meta.com\n📱 +20 123 456 789"
+          },
+          {
+            "intent": "pricing",
+            "pattern": "السعر|التكلفة|كم يكلف|الخطة|الباقة",
+            "confidence": 0.8,
+            "response": "الخطط والأسعار:\n\n🔥 **الخطة الأساسية**: 99$ شهرياً\n• خدمة واحدة (WhatsApp أو Messenger)\n• 1000 رسالة شهرياً\n• دعم أساسي\n\n🚀 **الخطة المتقدمة**: 199$ شهرياً\n• خدمتين\n• 5000 رسالة شهرياً\n• دعم متقدم + إحصائيات\n\n💎 **الخطة الاحترافية**: 299$ شهرياً\n• الخدمات الثلاث\n• رسائل غير محدودة\n• دعم 24/7 + تحليلات متقدمة\n\nأي خطة تناسبك؟"
+          }
+        ]
+      }
+    },
+    {
+      "id": "llm-node",
+      "type": "openAIAssistant",
+      "position": [500, 100],
+      "data": {
+        "name": "Sales AI Assistant",
+        "model": "gpt-4o-mini",
+        "temperature": 0.8,
+        "maxTokens": 600,
+        "systemPrompt": "أنت مساعد مبيعات محترف لشركة Privacy Meta المتخصصة في خدمات شات بوت للمراسلات.\n\nمهمتك:\n1. مساعدة العملاء في اختيار الخدمة المناسبة\n2. شرح المميزات بوضوح\n3. الرد على استفسارات الأسعار\n4. مساعدة في حجز المواعيد\n5. إقناع العميل بقيمة الخدمة\n\nأجب باللغة العربية بأسلوب ودود ومهني ومقنع. استخدم الرموز التعبيرية لجعل الردود أكثر جاذبية."
+      }
+    },
+    {
+      "id": "response-router",
+      "type": "responseRouter",
+      "position": [700, 100],
+      "data": {
+        "name": "Sales Response Router",
+        "rules": [
+          {
+            "condition": "intent == 'greeting'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'whatsapp_service'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'messenger_service",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'instagram_service",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'booking'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "intent == 'pricing'",
+            "response": "intent_response"
+          },
+          {
+            "condition": "default",
+            "response": "llm_response"
+          }
+        ]
+      }
+    },
+    {
+      "id": "output",
+      "type": "output",
+      "position": [900, 100],
+      "data": {
+        "name": "Output",
+        "type": "text"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "start",
+      "target": "intent-detector"
+    },
+    {
+      "source": "intent-detector",
+      "target": "response-router"
+    },
+    {
+      "source": "intent-detector",
+      "target": "llm-node"
+    },
+    {
+      "source": "llm-node",
+      "target": "response-router"
+    },
+    {
+      "source": "response-router",
+      "target": "output"
+    }
+  ],
+  "variables": {
+    "tenant_id": "",
+    "channel": "web",
+    "language": "ar",
+    "sales_agent": "أحمد"
+  }
+}
+

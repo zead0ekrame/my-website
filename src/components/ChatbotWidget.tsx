@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SITE } from '../lib/constants';
 import { processUserMessage, OpenRouterMessage, streamUserMessage } from '../lib/chat-api';
+import { IntentResult } from '../lib/simple-intent-detector';
 
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ export default function ChatbotWidget() {
   const [usage, setUsage] = useState<{ total: number } | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
+  const [lastIntent, setLastIntent] = useState<IntentResult | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -47,15 +49,50 @@ export default function ChatbotWidget() {
           content: userMessage
         };
 
-        // معالجة الرسالة عبر OpenRouter
+        // معالجة الرسالة مع Intent Detection
+        const result = await processUserMessage(userMessage, conversationHistory, sessionId || undefined);
+        
+        // حفظ النية المكتشفة
+        if (result.intent) {
+          setLastIntent(result.intent);
+        }
+
+        // إذا كانت النية لا تحتاج LangChain، استخدم الرد المباشر
+        if (!result.intent?.shouldUseLangChain) {
+          const botMessage = {
+            id: messages.length + 2,
+            text: result.response,
+            isBot: true
+          };
+          setMessages(prev => [...prev, botMessage]);
+          
+          // تحديث تاريخ المحادثة
+          const botOpenRouterMessage: OpenRouterMessage = {
+            role: 'assistant',
+            content: result.response
+          };
+          
+          setConversationHistory(prev => [
+            ...prev,
+            userOpenRouterMessage,
+            botOpenRouterMessage
+          ]);
+          
+          setIsLoading(false);
+          return;
+        }
+
+        // إذا كانت النية تحتاج LangChain، استخدم Streaming
         const baseId = messages.length + 2;
         setMessages(prev => [...prev, { id: baseId, text: '', isBot: true }]);
         let finalText = '';
+        
         try {
           const controller = new AbortController();
           abortRef.current = controller;
           setIsStreaming(true);
           const startedAt = performance.now();
+          
           finalText = await streamUserMessage(
             userMessage,
             conversationHistory,
@@ -65,10 +102,10 @@ export default function ChatbotWidget() {
             },
             { signal: controller.signal }
           );
+          
           setLatencyMs(Math.round(performance.now() - startedAt));
         } catch (e) {
           // fallback لو البث فشل
-          const result = await processUserMessage(userMessage, conversationHistory, sessionId || undefined);
           finalText = result.response;
           setMessages(prev => prev.map(m => m.id === baseId ? { ...m, text: finalText } : m));
         } finally {
@@ -76,7 +113,7 @@ export default function ChatbotWidget() {
           abortRef.current = null;
         }
 
-        // تحديث تاريخ المحادثة إذا كان يجب إضافته
+        // تحديث تاريخ المحادثة
         if (finalText) {
           const botOpenRouterMessage: OpenRouterMessage = {
             role: 'assistant',

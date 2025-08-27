@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  rasa:
+    build: .
+    ports:
+      - "5005:5005"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - LLM_TIMEOUT=15
+      - DEFAULT_TENANT=default
+      - HF_EMBEDDINGS_MODEL=sentence-transformers/all-MiniLM-L6-v2
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    command: rasa run --enable-api --cors "*" --port 5005
+
+  actions:
+    build: .
+    ports:
+      - "5055:5055"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - LLM_TIMEOUT=15
+      - DEFAULT_TENANT=default
+      - HF_EMBEDDINGS_MODEL=sentence-transformers/all-MiniLM-L6-v2
+    depends_on:
+      - redis
+    volumes:
+      - .:/app
+      - ./uploads:/app/uploads
+    command: rasa run actions
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:

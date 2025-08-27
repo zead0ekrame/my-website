@@ -1,0 +1,111 @@
+{
+  "name": "Modern Chat Widget - إيجي أفريكا",
+  "description": "نظام دردشة هجين يجمع بين Simple Intent Detection والذكاء الاصطناعي",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Chat Widget",
+      "type": "chatWidget",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "widgetConfig": {
+          "name": "إيجي أفريكا",
+          "description": "مساعد ذكي للتسويق الإلكتروني والذكاء الاصطناعي",
+          "theme": "light",
+          "primaryColor": "#3B82F6",
+          "secondaryColor": "#8B5CF6",
+          "placeholder": "اكتب رسالتك هنا...",
+          "welcomeMessage": "أهلاً بيك! 👋 أنا مساعد إيجي أفريكا الذكي. أقدر أساعدك في التسويق الإلكتروني والذكاء الاصطناعي. تحب نبدأ بإيه؟",
+          "position": "bottom-right",
+          "size": "medium",
+          "showBranding": false,
+          "showTypingIndicator": true,
+          "showReadMore": true,
+          "showScrollToBottom": true,
+          "showFileUpload": false,
+          "showVoiceInput": false,
+          "showEmojiPicker": true,
+          "showQuickReplies": true,
+          "quickReplies": [
+            "أهلاً",
+            "الخدمات",
+            "الأسعار",
+            "احجز الآن",
+            "اتصل بنا"
+          ]
+        }
+      }
+    },
+    {
+      "id": "2",
+      "name": "Simple Intent Detection",
+      "type": "function",
+      "position": {
+        "x": 400,
+        "y": 100
+      },
+      "data": {
+        "function": "// Simple Intent Detection for Arabic\nconst detectIntent = (message) => {\n  const normalizedMessage = message.toLowerCase().trim();\n  \n  // Greeting patterns\n  if (['أهلاً', 'أهلا', 'مرحبا', 'السلام عليكم', 'سلام عليكم'].some(pattern => \n    normalizedMessage.includes(pattern))) {\n    return {\n      intent: 'greet',\n      confidence: 0.95,\n      response: 'أهلاً وسهلاً! 👋 كيف أقدر أساعدك اليوم؟',\n      shouldUseLangChain: false\n    };\n  }\n  \n  // Service inquiry patterns\n  if (['الخدمات', 'الخدمة', 'خدمات', 'إيه الخدمات', 'ما هي الخدمات'].some(pattern => \n    normalizedMessage.includes(pattern))) {\n    return {\n      intent: 'service_inquiry',\n      confidence: 0.9,\n      response: 'خدماتنا متعددة! 🛠️ تسويق إلكتروني، ذكاء اصطناعي، تطوير مواقع، تصميم جرافيك. إيه اللي يعجبك؟',\n      shouldUseLangChain: false\n    };\n  }\n  \n  // Pricing inquiry patterns\n  if (['الأسعار', 'السعر', 'بكم', 'بكام', 'التكلفة'].some(pattern => \n    normalizedMessage.includes(pattern))) {\n    return {\n      intent: 'pricing_inquiry',\n      confidence: 0.9,\n      response: 'أسعارنا تنافسية جداً! 💰 تحب تشوف الخطة المناسبة ليك؟ يمكنني مساعدتك في اختيار أفضل خطة.',\n      shouldUseLangChain: false\n    };\n  }\n  \n  // Booking patterns\n  if (['احجز', 'حجز', 'موعد', 'استشارة', 'جلسة'].some(pattern => \n    normalizedMessage.includes(pattern))) {\n    return {\n      intent: 'booking_request',\n      confidence: 0.95,\n      response: 'ممتاز! 🎯 أقدر أساعدك في الحجز. متى تحب الموعد؟ وأي خدمة تريد؟',\n      shouldUseLangChain: false\n    };\n  }\n  \n  // Thanks patterns\n  if (['شكرا', 'شكراً', 'مشكور', 'متشكر'].some(pattern => \n    normalizedMessage.includes(pattern))) {\n    return {\n      intent: 'thanks',\n      confidence: 0.9,\n      response: 'العفو! 😊 سعيد إنني قدرت أساعدك. هل عندك أسئلة تانية؟',\n      shouldUseLangChain: false\n    };\n  }\n  \n  // Complex questions - use LangChain\n  if (normalizedMessage.length > 50 || normalizedMessage.includes('كيف') || normalizedMessage.includes('ما هي')) {\n    return {\n      intent: 'complex_question',\n      confidence: 0.7,\n      response: 'هذا سؤال ممتاز! 🧠 دعني أبحث لك عن إجابة مفصلة...',\n      shouldUseLangChain: true\n    };\n  }\n  \n  // Default fallback\n  return {\n    intent: 'unknown',\n    confidence: 0.5,\n    response: 'أفهم إن سؤالك مهم! 🤔 هل يمكنك إعادة صياغته بطريقة أوضح؟',\n    shouldUseLangChain: true\n  };\n};\n\n// Process the message\nconst result = detectIntent($input);\nreturn {\n  intent: result.intent,\n  confidence: result.confidence,\n  response: result.response,\n  shouldUseLangChain: result.shouldUseLangChain,\n  message: $input\n};"
+      }
+    },
+    {
+      "id": "3",
+      "name": "Response Router",
+      "type": "switch",
+      "position": {
+        "x": 550,
+        "y": 250
+      },
+      "data": {
+        "condition": "shouldUseLangChain === true"
+      }
+    },
+    {
+      "id": "4",
+      "name": "Simple Response",
+      "type": "textOutput",
+      "position": {
+        "x": 400,
+        "y": 400
+      },
+      "data": {
+        "text": "{{response}}"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Complex Response",
+      "type": "textOutput",
+      "position": {
+        "x": 700,
+        "y": 400
+      },
+      "data": {
+        "text": "{{response}}"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "1",
+      "target": "2"
+    },
+    {
+      "source": "2",
+      "target": "3"
+    },
+    {
+      "source": "3",
+      "target": "4",
+      "condition": "false"
+    },
+    {
+      "source": "3",
+      "target": "5",
+      "condition": "true"
+    }
+  ]
+}

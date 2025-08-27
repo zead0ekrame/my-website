@@ -1,0 +1,72 @@
+version: "3.1"
+
+stories:
+- story: greet path
+  steps:
+  - intent: greet
+  - action: utter_greet
+
+- story: goodbye path
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: thanks path
+  steps:
+  - intent: thanks
+  - action: utter_thanks
+
+- story: service inquiry path
+  steps:
+  - intent: service_inquiry
+  - action: utter_service_info
+
+- story: pricing inquiry path
+  steps:
+  - intent: pricing_inquiry
+  - action: utter_pricing_info
+
+- story: urgent support path
+  steps:
+  - intent: urgent_support
+  - action: action_urgent_support_handler
+
+- story: booking request path
+  steps:
+  - intent: booking_request
+  - action: action_booking_handler
+
+- story: general question path
+  steps:
+  - intent: general_question
+  - action: action_langchain_rag
+
+- story: humor response path
+  steps:
+  - intent: humor_response
+  - action: utter_greet
+
+- story: out of scope path
+  steps:
+  - intent: out_of_scope
+  - action: utter_out_of_scope
+
+- story: payment inquiry path
+  steps:
+  - intent: payment_inquiry
+  - action: action_langchain_rag
+
+- story: complex conversation
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: service_inquiry
+  - action: utter_service_info
+  - intent: pricing_inquiry
+  - action: utter_pricing_info
+  - intent: booking_request
+  - action: action_booking_handler
+  - intent: thanks
+  - action: utter_thanks
+  - intent: goodbye
+  - action: utter_goodbye

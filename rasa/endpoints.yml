@@ -1,0 +1,36 @@
+# This file contains the different endpoints your bot can use.
+
+# Server where the models are pulled from.
+# https://rasa.com/docs/rasa/model-storage#fetching-models-from-a-server
+
+models:
+  url: ${RASA_MODEL_SERVER}
+  token: ${RASA_TOKEN}
+  wait_time_between_pulls: 10   # [optional](default: 100)
+
+# Server which runs your custom actions.
+# https://rasa.com/docs/rasa/custom-actions
+
+action_endpoint:
+  url: "http://localhost:5055/webhook"
+
+# Tracker store which is used to store the conversations.
+# By default the conversations are stored in memory.
+# https://rasa.com/docs/rasa/tracker-stores
+
+tracker_store:
+  type: redis
+  url: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  db: ${REDIS_DB}
+  password: ${REDIS_PASSWORD}
+  use_ssl: false
+
+# Event broker which all conversation events are streamed to.
+# https://rasa.com/docs/rasa/event-brokers
+
+#event_broker:
+#  url: localhost
+#  username: username
+#  password: password
+#  queue: queue

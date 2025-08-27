@@ -3,67 +3,189 @@
 
 generator client {
   provider = "prisma-client-js"
-  // Using default output for Render compatibility
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-model Client {
-  id            String   @id @default(cuid())
-  name          String
-  slug          String   @unique
-  email         String   @unique
-  password      String   // Hashed password
-  systemPrompt  String?
-  model         String?  // LLM model override
-  temperature   Float?   // LLM temperature override
-  tokenLimitMonthly Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+// Tenants (العملاء)
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  plan        String   @default("basic") // basic, advanced, professional
+  limits      Json     @default("{}") // usage limits
+  status      String   @default("active") // active, suspended, cancelled
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
+  // Relations
+  users       User[]
+  projects    Project[]
+  usage       UsageDaily[]
+  auditLogs   AuditLog[]
+
+  @@map("tenants")
+}
+
+// Users (المستخدمين)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("viewer") // owner, admin, editor, viewer
+  tenantId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+// Projects (المشاريع)
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  tenantId    String
+  status      String   @default("active") // active, paused, archived
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  chatflows   Chatflow[]
+  knowledge   KnowledgeSource[]
+  indices     VectorIndex[]
   conversations Conversation[]
-  usageLogs     UsageLog[]
+
+  @@map("projects")
 }
 
+// Chatflows (من Flowise)
+model Chatflow {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   @default("support") // support, sales, faq
+  projectId   String
+  flowiseId   String?  // ID from Flowise
+  flowJson    Json     // Flowise flow configuration
+  version     Int      @default(1)
+  status      String   @default("active") // active, inactive, error
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@map("chatflows")
+}
+
+// Knowledge Sources (مصادر المعرفة)
+model KnowledgeSource {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // pdf, docx, csv, url, drive
+  uri         String
+  projectId   String
+  status      String   @default("pending") // pending, processing, indexed, error
+  metadata    Json     @default("{}") // file size, pages, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_sources")
+}
+
+// Vector Indices (فهارس المتجهات)
+model VectorIndex {
+  id          String   @id @default(cuid())
+  projectId   String
+  namespace   String   // tenantId:projectId
+  stats       Json     @default("{}") // document count, vector count, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("vector_indices")
+}
+
+// Conversations (المحادثات)
 model Conversation {
-  id         String   @id @default(cuid())
-  clientId   String?
-  sessionId  String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  projectId   String
+  chatflowId  String?
+  channel     String   @default("web") // web, whatsapp, messenger, instagram
+  userId      String?  // external user ID
+  rating      Int?     // 1-5 stars
+  status      String   @default("active") // active, closed, archived
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  client     Client?  @relation(fields: [clientId], references: [id])
-  messages   Message[]
+  // Relations
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chatflow    Chatflow?   @relation(fields: [chatflowId], references: [id])
+  messages    Message[]
 
-  @@index([clientId, sessionId])
+  @@map("conversations")
 }
 
+// Messages (الرسائل)
 model Message {
   id             String   @id @default(cuid())
   conversationId String
-  role           String
+  role           String   // user, assistant, system
   content        String
+  tokensIn       Int      @default(0)
+  tokensOut      Int      @default(0)
+  sources        Json?    // RAG sources
+  metadata       Json     @default("{}") // channel info, etc.
   createdAt      DateTime @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  // Relations
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
-  @@index([conversationId, createdAt])
+  @@map("messages")
 }
 
-model UsageLog {
-  id               String   @id @default(cuid())
-  clientId         String?
-  sessionId        String?
-  model            String
-  promptTokens     Int
-  completionTokens Int
-  totalTokens      Int
-  createdAt        DateTime @default(now())
+// Usage Daily (الاستخدام اليومي)
+model UsageDaily {
+  id        String   @id @default(cuid())
+  tenantId  String
+  date      DateTime
+  requests  Int      @default(0)
+  tokensIn  Int      @default(0)
+  tokensOut Int      @default(0)
+  cost      Float    @default(0)
+  createdAt DateTime @default(now())
 
-  client           Client?  @relation(fields: [clientId], references: [id])
+  // Relations
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([clientId, createdAt])
+  @@unique([tenantId, date])
+  @@map("usage_daily")
+}
+
+// Audit Log (سجل التدقيق)
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  actorId   String
+  action    String
+  payload   Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  // Relations
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
 }

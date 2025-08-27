@@ -1,0 +1,84 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - thanks
+  - booking_request
+  - pricing_inquiry
+  - service_inquiry
+  - payment_inquiry
+  - urgent_support
+  - general_question
+  - humor_response
+  - out_of_scope
+
+entities:
+  - service_type
+  - urgency_level
+  - budget_range
+  - location
+
+slots:
+  service_type:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: service_type
+  urgency_level:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: urgency_level
+  budget_range:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: budget_range
+  location:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: location
+
+responses:
+  utter_greet:
+    - text: "أهلاً وسهلاً! كيف أقدر أساعدك اليوم؟ 😊"
+    - text: "مرحباً! نورتنا، إيه اللي محتاجه؟ 👋"
+    - text: "أهلاً بيك! تحت أمرك، تسأل عن إيه؟ 🌟"
+
+  utter_goodbye:
+    - text: "في حفظ الله! موجود لو احتجت أي حاجة 🙏"
+    - text: "مع السلامة — بالتوفيق! 🌟"
+    - text: "سعيد بخدمتك! نشوفك على خير 👋"
+
+  utter_thanks:
+    - text: "العفو! لو حابب نكمل بخطوة عملية قولي 💬"
+    - text: "على الرحب! تحب أحجز لك استشارة سريعة؟"
+    - text: "تحت أمرك دائمًا — أي استفسار تاني؟"
+
+  utter_booking_confirm:
+    - text: "ممتاز! سجلت طلبك للحجز. فريقنا هيوصل لك خلال ساعة 👨‍💼"
+    - text: "تمام! الحجز تم بنجاح. هنرجع لك قريب 🎯"
+
+  utter_pricing_info:
+    - text: "بالنسبة للتكلفة، نحدد أولاً:\n- نوع الذكاء المطلوب\n- عدد السيناريوهات\n- التكاملات الإضافية\n\nاحجز استشارة: /book أو واتساب: +20 106 616 1454"
+
+  utter_service_info:
+    - text: "خدماتنا الرئيسية:\n🤖 بوت ماسنجر ذكي\n📱 تسويق إلكتروني\n🎬 ميديا ومونتاج\n🎨 تصميم جرافيك\n📸 تصوير فوتوغرافي\n🧠 حلول الذكاء الاصطناعي"
+
+  utter_urgent_support:
+    - text: "فهمت إن الموضوع عاجل! هتواصل معاك فوراً عبر واتساب: +20 106 616 1454 🚨"
+
+  utter_out_of_scope:
+    - text: "عذراً، هذا خارج نطاق خدماتنا. لكن أقدر أساعدك في:\n- حلول الذكاء الاصطناعي\n- التسويق الإلكتروني\n- التصميم والمونتاج"
+
+actions:
+  - action_langchain_rag
+  - action_booking_handler
+  - action_pricing_handler
+  - action_urgent_support_handler
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

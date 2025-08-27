@@ -1,315 +1,194 @@
-import { SITE } from './constants';
-// OpenRouter Chat API (neutral naming)
-export interface OpenRouterMessage {
+import { SimpleIntentDetector } from './simple-intent-detector';
+
+export interface ChatMessage {
+  id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  timestamp: Date;
+  metadata?: Record<string, any>;
 }
 
-export interface OpenRouterResponse {
-  choices: Array<{
-    message: {
-      content: string;
-      role: string;
-    };
-  }>;
-  usage: {
-    total_tokens: number;
-    prompt_tokens: number;
-    completion_tokens: number;
-  };
+export interface ChatResponse {
+  message: string;
+  intent?: string;
+  confidence?: number;
+  sources?: string[];
+  metadata?: Record<string, any>;
 }
 
-export interface ChatbotContext {
-  websiteInfo: string;
-  services: string;
-  companyInfo: string;
+export interface ChatSession {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  chatflowId?: string;
+  channel: 'web' | 'whatsapp' | 'messenger' | 'instagram';
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// Context used to guide the assistant tone and knowledge
-const WEBSITE_CONTEXT: ChatbotContext = {
-  websiteInfo: `
-    نحن شركة "إيجي أفريكا" نقدم حلول الذكاء الاصطناعي في الوطن العربي.
-    نخدم مصر والسعودية ودول الخليج.
-    نقدم خدمات: بوت ماسنجر ذكي، تسويق إلكتروني، ميديا ومونتاج، تصميم جرافيك، تصوير فوتوغرافي، وحلول الذكاء الاصطناعي للأعمال.
-  `,
-  services: `
-    خدماتنا الرئيسية:
-    1. بوت ماسنجر بالذكاء الاصطناعي - يلتزم بسياسات Meta
-    2. التسويق الإلكتروني - حملات مدفوعة وإدارة إعلانات
-    3. ميديا ومونتاج - فيديوهات إعلانية قصيرة
-    4. تصميم جرافيك - هويات بصرية ومواد حملات
-    5. تصوير فوتوغرافي - محتوى مستخدمين أصلي
-    6. حلول الذكاء الاصطناعي - أتمتة وتحليلات
-  `,
-  companyInfo: `
-    معلومات الشركة:
-    - المالك: EKRAMY FOUAAD
-    - الهاتف: +20 106 616 1454
-    - البريد الإلكتروني: ziad@ekramy-ai.online
-    - العنوان: مصر – الإسكندرية – العامرية
-    - نركز على: السعودية والخليج
-  `
-};
+export class ChatAPI {
+  private intentDetector: SimpleIntentDetector;
+  private flowiseBaseUrl: string;
 
-function createSystemMessage(): string {
-  return `أنت مساعد ذكي لشركة "إيجي أفريكا". 
+  constructor() {
+    this.intentDetector = new SimpleIntentDetector();
+    this.flowiseBaseUrl = process.env.FLOWISE_URL || 'http://localhost:3001';
+  }
 
-${WEBSITE_CONTEXT.websiteInfo}
-
-${WEBSITE_CONTEXT.services}
-
-${WEBSITE_CONTEXT.companyInfo}
-
-تعليمات مهمة:
-- ارد باللغة العربية دائماً
-- كن ودوداً، بسيطاً، وبنبرة إنسانية مشجعة
-- قدم معلومات دقيقة عن خدماتنا مع أمثلة قصيرة
-- لو السؤال فيه هزار/دعابة، رد بخفة دم محترمة بدون إسهاب
-- لو مش عارف الإجابة، اعتذر بلطف واقترح واتساب للمساعدة
-- ساعد العميل يختار الخدمة المناسبة بناءً على هدفه باقتcisار
-- اذكر أننا نخدم مصر والسعودية والخليج عند الحاجة
-- أكّد أن البوت يلتزم بسياسات Meta ونطاق 24 ساعة عند ذكر ماسنجر
-- لو رسالة المستخدم غير مفهومة أو هزار، رد بجملة واحدة لطيفة ثم ارجع فوراً للموضوع.
-- لا تكرر نفس السؤال مرتين متتاليتين؛ بدّل الصياغة أو قدّم إجابة مباشرة.`;
-}
-
-export async function sendMessageToOpenRouter(
-  userMessage: string,
-  conversationHistory: OpenRouterMessage[] = [],
-  sessionId?: string
-): Promise<string> {
-  try {
-    const messages: OpenRouterMessage[] = [
-      // نترك إنشاء رسالة الـ system للباك-إند حسب clientId
-      ...conversationHistory,
-      { role: 'user', content: userMessage }
-    ];
-
-    let clientId: string | null = null;
+  /**
+   * معالجة رسالة المستخدم
+   */
+  async processMessage(
+    message: string,
+    session: ChatSession,
+    options?: {
+      useFlowise?: boolean;
+      chatflowId?: string;
+    }
+  ): Promise<ChatResponse> {
     try {
-      clientId = typeof window !== 'undefined' ? localStorage.getItem('activeClientId') : null;
-    } catch {}
-
-    const url = clientId ? `/api/openrouter/chat?clientId=${encodeURIComponent(clientId)}` : '/api/openrouter/chat';
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages,
-        model: process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free',
-        temperature: 0.7,
-        max_tokens: 1000,
-        stream: false,
-        ...(clientId ? { clientId } : {}),
-        ...(sessionId ? { sessionId } : {})
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: OpenRouterResponse = await response.json();
-    if (data.choices && data.choices.length > 0) {
-      return data.choices[0].message.content;
-    }
-    throw new Error('No response from OpenRouter');
-  } catch (error) {
-    console.error('Error calling OpenRouter API:', error);
-    return `عذراً، حدث خطأ في الاتصال. يمكنك التواصل معنا مباشرة عبر واتساب: +20 106 616 1454 أو عبر البريد الإلكتروني: ziad@ekramy-ai.online`;
-  }
-}
-
-export async function processUserMessage(
-  userMessage: string,
-  conversationHistory: OpenRouterMessage[] = [],
-  sessionId?: string
-): Promise<{ response: string; shouldAddToHistory: boolean }> {
-  try {
-    const normalized = userMessage.trim().toLowerCase();
-    const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
-
-    const greetings = ['مرحبا', 'مرحبا!', 'أهلاً', 'اهلا', 'اهلا!', 'السلام عليكم', 'سلام عليكم'];
-    const greetingReplies = [
-      'يا هلا! نورتنا 👋 كيف أقدر أساعدك؟',
-      'أهلاً بيك! تحب نبدأ بخدمة معينة؟',
-      'وعليكم السلام ورحمة الله — تحت أمرك، تسأل عن إيه؟',
-      'شرفتنا! خبرني هدفك، وأرشح لك الخدمة الأنسب 👌'
-    ];
-    if (greetings.some(g => normalized.includes(g))) {
-      return { response: pick(greetingReplies), shouldAddToHistory: false };
-    }
-
-    // Price flow: structured questions + booking CTA
-    const priceTriggers = ['كام', 'بكام', 'السعر', 'التكلفة', 'يعملوا كام', 'بيكلف كام'];
-    if (priceTriggers.some(t => normalized.includes(t))) {
-      const steps = [
-        'نوع الذكاء: ردود ثابتة أم مدعومة بنموذج LLM؟',
-        'عدد السيناريوهات/الردود الذكية المطلوبة تقريباً؟',
-        'تكاملات إضافية: CRM / Google Sheets / WhatsApp…؟',
-        'هل تحتاج دعم شهري ومتابعة؟'
-      ];
-      const booking = `لو حابب ننجزها بسرعة: احجز من ${SITE.calendlyUrl || '/book'} أو تواصل واتساب: ${SITE.whatsappUrl}.`;
-      return { response: `بالنسبة للتكلفة، نحدد أولاً بعض النقاط:\n- ${steps.join('\n- ')}\n\n${booking}`, shouldAddToHistory: false };
-    }
-
-    const humorTriggers = ['هزار', 'نكتة', 'نكت', 'بهزر', 'بهزار', 'هههه', 'lol', 'حلبؤه', 'حلبؤة'];
-    const offensiveTriggers = ['امك', 'أمك', 'ابوك', 'أبوك', 'كس', 'يلعن', 'قاحات', 'قحبة', 'متناك', 'نيك'];
-    const isHumor = humorTriggers.some(t => normalized.includes(t));
-    const isOffensive = offensiveTriggers.some(t => normalized.includes(t));
-
-    const humorReplies = [
-      'ضحكتني 😂 بس خلينا ننجز! تحب نبدأ بخدمة التسويق الإلكتروني ولا الذكاء الاصطناعي؟',
-      'تمام الهزار! 😄 طيب قولي عايز توصل لإيه ونظبطها لك.',
-      'هايل! نخلي الهزار فاصل لطيف ونكمل شغلنا 😉 محتاج إيه بالظبط؟'
-    ];
-
-    const wittyRedirect = [
-      '😁 أنا بوت يا صديقي، معنديش عِشّة ولا طيران، بس أقدر أفيدك في التسويق الإلكتروني أو حلول الذكاء الاصطناعي. تحب نبدأ بإيه؟',
-      '🙂 لول، فهمتها! نرجع للشغل: مهتم بالذكاء الاصطناعي ولا التسويق الإلكتروني؟',
-      '😄 نجربني براحتك، وأنا أرجّعك للموضوع! تهمك الأسعار ولا تفاصيل الخدمة؟'
-    ];
-
-    const recentUserMsgs = conversationHistory.filter(m => m.role === 'user').slice(-6).map(m => m.content.toLowerCase());
-    const recentHumorCount = recentUserMsgs.filter(m => humorTriggers.some(t => m.includes(t))).length;
-    const recentOffensiveCount = recentUserMsgs.filter(m => offensiveTriggers.some(t => m.includes(t))).length;
-
-    if (isOffensive) {
-      if (recentOffensiveCount >= 1) {
-        return { response: 'خلينا في المفيد يا بطل 🙏 لو مهتم بخدمة معينة قولي عليها، وأنا أساعدك فورًا.', shouldAddToHistory: false };
+      // محاولة الكشف عن النية
+      const intentResult = this.intentDetector.detectIntent(message);
+      
+      // إذا كانت النية واضحة وثقتها عالية، استخدم الرد السريع
+      if (intentResult.confidence > 0.8) {
+        return {
+          message: intentResult.response || 'أهلاً وسهلاً! كيف أقدر أساعدك؟',
+          intent: intentResult.intent,
+          confidence: intentResult.confidence,
+          metadata: { source: 'intent_detector' }
+        };
       }
-      return { response: pick(wittyRedirect), shouldAddToHistory: false };
-    }
 
-    if (isHumor) {
-      if (recentHumorCount >= 1) {
-        return { response: '😂 لطيفة! نرجع لموضوعك؟ اختار: 1) الأسعار 2) طريقة التنفيذ 3) أمثلة سريعة', shouldAddToHistory: false };
+      // إذا كان مطلوب استخدام Flowise
+      if (options?.useFlowise && options.chatflowId) {
+        return await this.processWithFlowise(message, session, options.chatflowId);
       }
-      return { response: pick(humorReplies), shouldAddToHistory: false };
-    }
 
-    const ambiguousTriggers = ['مش فاهم', 'مش واضح', 'ايه', 'إيه', 'يعني', 'ازاي', 'إزاي', 'مم', 'نن', 'خغ', 'للل', 'سقلم'];
-    const isShort = normalized.length <= 2 || /^(.)\1{2,}$/.test(normalized);
-    const clarifyPool = [
-      'تمام 👌، ممكن توضّح أكتر؟ تحب تعرف الأسعار ولا التفاصيل الفنية؟',
-      'حلو! قصدك على الخدمة نفسها ولا التكلفة والمدة؟',
-      'خليني أفهمك صح، إنت عايز تعرف إيه بالضبط؟',
-      'طيب، هل تركّز على التسويق الإلكتروني ولا الذكاء الاصطناعي؟',
-      'علشان أفيدك بسرعة: تهمك الأسعار ولا طريقة التنفيذ؟'
-    ];
-    if (isShort || ambiguousTriggers.some(t => normalized.includes(t))) {
-      return { response: pick(clarifyPool), shouldAddToHistory: false };
-    }
+      // استخدام النية المكتشفة مع تحسين
+      if (intentResult.confidence > 0.6) {
+        return {
+          message: intentResult.response || 'أفهم سؤالك! دعني أساعدك...',
+          intent: intentResult.intent,
+          confidence: intentResult.confidence,
+          metadata: { source: 'intent_detector_fallback' }
+        };
+      }
 
-    const thanksTriggers = ['شكرا', 'شكرًا', 'مشكور', 'thx', 'thanks'];
-    const thanksReplies = [
-      'العفو! لو حابب نكمل بخطوة عملية قولي 💬',
-      'على الرحب! تحب أحجز لك استشارة سريعة؟',
-      'تحت أمرك دائمًا — أي استفسار تاني؟'
-    ];
-    if (thanksTriggers.some(t => normalized.includes(t))) {
-      return { response: pick(thanksReplies), shouldAddToHistory: false };
-    }
+      // رد عام
+      return {
+        message: 'أهلاً! كيف أقدر أساعدك اليوم؟ يمكنك سؤالي عن خدماتنا أو أسعارنا.',
+        metadata: { source: 'general_response' }
+      };
 
-    const byeTriggers = ['مع السلامة', 'وداعا', 'وداعًا', 'باي'];
-    const byeReplies = [
-      'في حفظ الله! موجود لو احتجت أي حاجة 🙏',
-      'مع السلامة — بالتوفيق! 🌟',
-      'سعيد بخدمتك! نشوفك على خير 👋'
-    ];
-    if (byeTriggers.some(t => normalized.includes(t))) {
-      return { response: pick(byeReplies), shouldAddToHistory: false };
-    }
-
-    // Default non-stream fallback
-    const aiResponse = await sendMessageToOpenRouter(userMessage, conversationHistory, sessionId);
-    return { response: aiResponse, shouldAddToHistory: true };
-  } catch (error) {
-    console.error('Error processing user message:', error);
-    return { response: 'عذراً، حدث خطأ. يمكنك التواصل معنا عبر واتساب للحصول على مساعدة فورية.', shouldAddToHistory: false };
+          } catch (error) {
+        console.error('Error processing message:', error);
+        return {
+          message: 'عذراً، حدث خطأ في معالجة رسالتك. حاول مرة أخرى.',
+          metadata: { source: 'error', error: error instanceof Error ? error.message : 'Unknown error' }
+        };
+      }
   }
-}
 
-export async function streamUserMessage(
-  userMessage: string,
-  conversationHistory: OpenRouterMessage[] = [],
-  sessionId: string | undefined,
-  onDelta: (chunk: string) => void,
-  options?: { signal?: AbortSignal }
-): Promise<string> {
-  let clientId: string | null = null;
-  try {
-    clientId = typeof window !== 'undefined' ? localStorage.getItem('activeClientId') : null;
-  } catch {}
-  const params = new URLSearchParams();
-  if (clientId) params.set('clientId', clientId);
-  if (sessionId) params.set('sessionId', sessionId);
+  /**
+   * معالجة الرسالة عبر Flowise
+   */
+  private async processWithFlowise(
+    message: string,
+    session: ChatSession,
+    chatflowId: string
+  ): Promise<ChatResponse> {
+    try {
+      const response = await fetch(`${this.flowiseBaseUrl}/api/v1/prediction/${chatflowId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.FLOWISE_API_KEY || ''}`
+        },
+        body: JSON.stringify({
+          question: message,
+          overrideConfig: {
+            sessionId: session.id,
+            tenantId: session.tenantId,
+            projectId: session.projectId,
+            channel: session.channel
+          }
+        })
+      });
 
-  const messages: OpenRouterMessage[] = [
-    ...conversationHistory,
-    { role: 'user', content: userMessage }
-  ];
+      if (!response.ok) {
+        throw new Error(`Flowise API error: ${response.status}`);
+      }
 
-  const res = await fetch(`/api/openrouter/chat/stream?${params.toString()}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-    body: JSON.stringify({ messages }),
-    signal: options?.signal
-  });
-  if (!res.ok || !res.body) {
-    throw new Error(`Stream error: ${res.status}`);
-  }
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let full = '';
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const parts = buffer.split('\n\n');
-    buffer = parts.pop() || '';
-    for (const part of parts) {
-      if (!part.startsWith('data:')) continue;
-      const json = part.slice(5).trim();
-      if (!json || json === '[DONE]') continue;
-      try {
-        const evt = JSON.parse(json);
-        const delta: string = evt?.choices?.[0]?.delta?.content || evt?.choices?.[0]?.message?.content || '';
-        if (delta) {
-          full += delta;
-          onDelta(delta);
+      const data = await response.json();
+      
+      return {
+        message: data.text || 'أهلاً! كيف أقدر أساعدك؟',
+        metadata: {
+          source: 'flowise',
+          chatflowId,
+          flowiseResponse: data
         }
-      } catch {
-        // ignore parse errors of partial chunks
-      }
-    }
-  }
-  return full;
-}
+      };
 
-/**
- * قياس سرعة نماذج Qwen المحددة من خلال مسار bench
- */
-export async function benchmarkModels(prompt?: string, models?: string[]): Promise<
-  { model: string; ok: boolean; latencyMs: number; preview?: string; error?: string }[]
-> {
-  try {
-    const response = await fetch('/api/openrouter/bench', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: prompt || 'اختبار سرعة بسيط', models })
-    });
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Bench error: ${response.status} ${text}`);
-    }
-    const data = await response.json();
-    return data.results as { model: string; ok: boolean; latencyMs: number; preview?: string; error?: string }[];
-  } catch (error) {
-    console.error('benchmarkModels error:', error);
-    return [];
+          } catch (error) {
+        console.error('Flowise API error:', error);
+        
+        // Fallback للكشف عن النية
+        const intentResult = this.intentDetector.detectIntent(message);
+        return {
+          message: intentResult.response || 'أهلاً! كيف أقدر أساعدك؟',
+          intent: intentResult.intent,
+          confidence: intentResult.confidence,
+          metadata: { 
+            source: 'flowise_fallback',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }
+        };
+      }
+  }
+
+  /**
+   * إنشاء جلسة محادثة جديدة
+   */
+  createSession(
+    tenantId: string,
+    projectId: string,
+    channel: 'web' | 'whatsapp' | 'messenger' | 'instagram',
+    chatflowId?: string
+  ): ChatSession {
+    return {
+      id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      tenantId,
+      projectId,
+      chatflowId,
+      channel,
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
+  /**
+   * إضافة رسالة للجلسة
+   */
+  addMessage(session: ChatSession, message: ChatMessage): void {
+    session.messages.push(message);
+    session.updatedAt = new Date();
+  }
+
+  /**
+   * الحصول على إحصائيات الجلسة
+   */
+  getSessionStats(session: ChatSession) {
+    return {
+      messageCount: session.messages.length,
+      userMessages: session.messages.filter(m => m.role === 'user').length,
+      assistantMessages: session.messages.filter(m => m.role === 'assistant').length,
+      duration: Date.now() - session.createdAt.getTime(),
+      channel: session.channel
+    };
   }
 }
 

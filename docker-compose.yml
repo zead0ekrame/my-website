@@ -1,48 +1,64 @@
 version: '3.8'
 
 services:
-  # MySQL Database
-  mysql:
-    image: mysql:8.0
-    container_name: privacy_meta_mysql
-    restart: unless-stopped
+  app:
+    build: .
+    ports:
+      - "3000:3000"
     environment:
-      MYSQL_ROOT_PASSWORD: your_secure_root_password
-      MYSQL_DATABASE: privacy_meta
-      MYSQL_USER: privacy_user
-      MYSQL_PASSWORD: your_secure_user_password
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - LLM_TIMEOUT=15
+      - DEFAULT_TENANT=default
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+
+  db:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql/init:/docker-entrypoint-initdb.d
-    networks:
-      - privacy_meta_network
 
-  # Privacy Meta Application
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile.secure
-    container_name: privacy_meta_app
-    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
     ports:
-      - "3000:3000"
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  flowise:
+    image: flowiseai/flowise:latest
+    ports:
+      - "3001:3000"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=mysql://privacy_user:your_secure_user_password@mysql:3306/privacy_meta
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@privacy-meta.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-ChangeThisPassword123!}
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      - FLOWISE_USERNAME=admin
+      - FLOWISE_PASSWORD=admin123
+      - DATABASE_TYPE=sqlite
+      - DATABASE_PATH=/home/node/.flowise
+      - APIKEY_PATH=/home/node/.flowise
+      - LOG_PATH=/home/node/.flowise/logs
+      - LOG_LEVEL=info
+      - EXECUTION_MODE=local
+      - TOOL_FUNCTION_TIME_LIMIT=60000
+      - FLOWISE_PORT=3000
+    volumes:
+      - flowise_data:/home/node/.flowise
     depends_on:
-      - mysql
-    networks:
-      - privacy_meta_network
+      - redis
 
 volumes:
   mysql_data:
-
-networks:
-  privacy_meta_network:
-    driver: bridge
+  redis_data:
+  flowise_data:

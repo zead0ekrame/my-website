@@ -1,72 +1,193 @@
-# Privacy Meta - تطبيق الخصوصية الآمن
+# 🚀 Privacy Meta - Simple Intent Detection + LangChain
 
-تطبيق ويب متقدم مع نظام مصادقة آمن وواجهة دردشة ذكية.
+## 📋 نظرة عامة
 
-## 🚀 المميزات
+مشروع متكامل يجمع بين **Next.js** للواجهة الأمامية، **Simple Intent Detection** للذكاء الاصطناعي، و **LangChain** للـ RAG، مع دعم كامل لـ **WhatsApp** و **Facebook Messenger**.
 
-- ✅ نظام مصادقة آمن مع JWT
-- ✅ Rate limiting للحماية من الهجمات
-- ✅ Validation للبيانات المدخلة
-- ✅ Logging للأمان
-- ✅ قاعدة بيانات MySQL آمنة
-- ✅ واجهة دردشة مع AI
+## ✨ الميزات الرئيسية
 
-## 🔒 التحسينات الأمنية
+- 🧠 **Simple Intent Detection**: معالجة ذكية للرسائل والـ Intents بدون تعقيد
+- 🚀 **LangChain RAG**: ردود مفصلة على الأسئلة المعقدة
+- 📱 **Multi-Platform**: دعم WhatsApp و Facebook Messenger
+- 🌐 **Website Chat**: دردشة متكاملة عبر الموقع
+- 🔐 **Secure**: نظام مصادقة متقدم وحماية شاملة
+- 📊 **Analytics**: تتبع الاستخدام والأداء
 
-- تم إصلاح ثغرة الكوكي الثابتة
-- إضافة Rate Limiting (100 طلب/دقيقة)
-- Validation للبيانات المدخلة
-- Logging للمحاولات المشبوهة
-- حماية أفضل لصفحات الأدمن
+## 🏗️ البنية التقنية
 
-## 🛠️ التثبيت
-
-### 1. تثبيت MySQL
-```bash
-chmod +x scripts/setup-mysql.sh
-./scripts/setup-mysql.sh
+```
+├── src/                    # Next.js Application
+│   ├── app/               # App Router
+│   ├── components/        # React Components
+│   └── lib/              # Utilities & APIs
+│       ├── simple-intent-detector.ts  # Intent Detection
+│       ├── chat-api.ts               # Chat Processing
+│       └── webhook-verification.ts   # Security
+├── prisma/               # Database Schema
+└── docker-compose.yml    # Infrastructure
 ```
 
-### 2. إعداد المتغيرات البيئية
+## 🚀 التشغيل السريع
+
+### 1. تثبيت Dependencies
+
 ```bash
-cp env.example .env
-# عدل .env بالمعلومات الصحيحة
+# Node.js dependencies
+npm install
 ```
 
-### 3. تشغيل التطبيق
+### 2. تشغيل الخدمات
+
 ```bash
-chmod +x scripts/start-app.sh
-./scripts/start-app.sh
+# تشغيل Redis
+docker-compose up redis -d
+
+# تشغيل Next.js
+npm run dev
 ```
 
-## 📝 المتغيرات البيئية المطلوبة
+### 3. اختبار النظام
+
+```bash
+# اختبار Chat API
+curl -X POST http://localhost:3000/api/rasa/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "مرحبا"}'
+```
+
+## 🔧 التكوين
+
+انسخ ملف `.env.example` إلى `.env` واملأ المتغيرات:
 
 ```env
-ADMIN_EMAIL=your-real-admin@email.com
-ADMIN_PASSWORD=your-super-strong-password
-DATABASE_URL="mysql://username:password@localhost:3306/privacy_meta"
-OPENROUTER_API_KEY=your_api_key
+# Database
+DATABASE_URL="mysql://user:pass@localhost:3306/db"
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# WhatsApp/Facebook (اختياري)
+WHATSAPP_ACCESS_TOKEN=your_token
+FACEBOOK_PAGE_ACCESS_TOKEN=your_token
 ```
 
-## 🚨 ملاحظات أمنية
+## 📱 المنصات المدعومة
 
-- **لا تستخدم كلمات مرور ضعيفة**
-- **غير JWT_SECRET في الإنتاج**
-- **استخدم HTTPS في الإنتاج**
-- **راقب الـ logs بانتظام**
+| المنصة | الحالة | API Endpoint |
+|--------|--------|--------------|
+| Website | ✅ | `/api/rasa/chat` |
+| WhatsApp | ✅ | `/api/rasa/webhook` |
+| Messenger | ✅ | `/api/rasa/webhook` |
 
-## 📊 قاعدة البيانات
+## 🧠 كيفية عمل النظام
 
-- MySQL بدلاً من SQLite
-- نماذج محسنة للأمان
-- فهارس للسرعة
-- علاقات آمنة
+### Intent Detection
+- **Simple Patterns**: كشف النوايا عبر أنماط بسيطة
+- **Entity Extraction**: استخراج الكيانات (نوع الخدمة، الأولوية، الموقع)
+- **Smart Routing**: اختيار بين الرد المباشر و LangChain
 
-## 🔧 التطوير
+### Actions
+- **Direct Responses**: للرسائل البسيطة (تحية، وداع، شكر)
+- **LangChain RAG**: للأسئلة المعقدة والعامة
+- **Entity Handling**: معالجة الكيانات المستخرجة
+
+## 🐳 Docker
 
 ```bash
-npm run dev      # تشغيل التطوير
-npm run build    # بناء الإنتاج
-npm run start    # تشغيل الإنتاج
-npm run lint     # فحص الكود
+# تشغيل كامل
+docker-compose up -d
+
+# تشغيل Redis فقط
+docker-compose up redis -d
 ```
+
+## 📚 التوثيق
+
+- [Intent Detection Guide](docs/intent-detection.md)
+- [API Documentation](docs/api.md)
+- [Deployment Guide](docs/deployment.md)
+
+## 🔍 الاختبار
+
+```bash
+# اختبار Intent Detection
+npm run test:chat
+
+# اختبار API
+curl -X POST http://localhost:3000/api/rasa/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message": "عايز أحجز خدمة"}'
+```
+
+## 🚨 استكشاف الأخطاء
+
+### مشاكل شائعة
+
+1. **Redis Connection Error**
+   ```bash
+   docker-compose up redis -d
+   ```
+
+2. **Intent Detection Error**
+   ```bash
+   # تحقق من console logs
+   npm run dev
+   ```
+
+3. **API Error**
+   ```bash
+   # تحقق من Network tab في DevTools
+   ```
+
+## 📈 المراقبة والتحليلات
+
+### Intent Metrics
+- دقة كشف النوايا
+- وقت معالجة الرسائل
+- معدل النجاح
+
+### Performance Metrics
+- وقت الاستجابة
+- استخدام الذاكرة
+- عدد الطلبات
+
+## 🔐 الأمان
+
+- **Webhook Verification**: تحقق من صحة الرسائل
+- **Rate Limiting**: منع الإساءة
+- **Input Sanitization**: تنظيف المدخلات
+- **Tenant Isolation**: عزل العملاء
+
+## 🚀 النشر
+
+### Docker
+
+```bash
+# بناء الصور
+docker-compose build
+
+# تشغيل الخدمات
+docker-compose up -d
+```
+
+### Production
+
+```bash
+# بناء Next.js
+npm run build
+
+# تشغيل Production
+npm start
+```
+
+## 📞 الدعم
+
+للمساعدة التقنية:
+- 📧 ziad@ekramy-ai.online
+- 📱 +20 106 616 1454
+- 🌐 https://ekramy-ai.online
+
+---
+
+**ملاحظة**: هذا المشروع يجمع بين البساطة والذكاء لإنشاء تجربة مستخدم استثنائية! 🚀
