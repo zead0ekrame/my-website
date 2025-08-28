@@ -74,8 +74,7 @@ export async function GET(request: NextRequest) {
     // إحصائيات حسب الخطة
     const planStats = await prisma.tenant.groupBy({
       by: ['plan'],
-      _count: { id: true },
-      _sum: { monthlyUsage: true, planLimit: true }
+      _count: { id: true }
     });
 
     // إحصائيات حسب القناة
@@ -84,9 +83,9 @@ export async function GET(request: NextRequest) {
       _count: { id: true }
     });
 
-    // إحصائيات حسب النوع
-    const typeStats = await prisma.project.groupBy({
-      by: ['type'],
+    // إحصائيات حسب الحالة
+    const statusStats = await prisma.project.groupBy({
+      by: ['status'],
       _count: { id: true }
     });
 
@@ -112,15 +111,15 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         plan: true,
-        monthlyUsage: true,
+        createdAt: true,
         _count: {
           select: {
             projects: true,
-            conversations: true
+            users: true
           }
         }
       },
-      orderBy: { monthlyUsage: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 5
     });
 
@@ -144,17 +143,15 @@ export async function GET(request: NextRequest) {
         },
         plans: planStats.map(plan => ({
           plan: plan.plan,
-          count: plan._count.id,
-          totalUsage: plan._sum.monthlyUsage || 0,
-          totalLimit: plan._sum.planLimit || 0
+          count: plan._count.id
         })),
         channels: channelStats.map(channel => ({
           channel: channel.channel,
           count: channel._count.id
         })),
-        types: typeStats.map(type => ({
-          type: type.type,
-          count: type._count.id
+        statuses: statusStats.map(status => ({
+          status: status.status,
+          count: status._count.id
         })),
         dailyActivity: dailyActivity.map(day => ({
           date: day.date,
@@ -165,9 +162,9 @@ export async function GET(request: NextRequest) {
           id: tenant.id,
           name: tenant.name,
           plan: tenant.plan,
-          monthlyUsage: tenant.monthlyUsage,
-          projectsCount: tenant._count.projects,
-          conversationsCount: tenant._count.conversations
+          createdAt: tenant.createdAt,
+                  projectsCount: tenant._count.projects,
+        usersCount: tenant._count.users
         }))
       }
     });

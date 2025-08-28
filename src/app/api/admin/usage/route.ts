@@ -27,8 +27,8 @@ export async function GET(req: NextRequest) {
   if (clientIdParam) {
     // Allow passing slug or id
     const found = await (prisma as any).client.findFirst({
-      where: { OR: [{ id: clientIdParam }, { slug: clientIdParam }] },
-      select: { id: true, name: true, slug: true }
+              where: { OR: [{ id: clientIdParam }, { email: clientIdParam }] },
+        select: { id: true, name: true, email: true }
     });
     if (!found) {
       return NextResponse.json({ month: month || null, totalTokens: 0, clients: [] });
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ month: month || null, totalTokens: globalAgg._sum.totalTokens || 0, clients: results });
   }
 
-  const clients = await (prisma as any).client.findMany({ select: { id: true, name: true, slug: true } });
+        const clients = await prisma.tenant.findMany({ select: { id: true, name: true, email: true } });
   const results: any[] = [];
   for (const c of clients) {
     const where = { ...whereAny, clientId: c.id };

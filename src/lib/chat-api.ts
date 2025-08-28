@@ -1,5 +1,10 @@
 import { SimpleIntentDetector } from './simple-intent-detector';
 
+export interface OpenRouterMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';

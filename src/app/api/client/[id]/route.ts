@@ -18,17 +18,14 @@ export async function GET(
     }
 
     // Find client by ID
-    const client = await prisma.client.findUnique({
+    const client = await prisma.tenant.findUnique({
       where: { id: clientId },
       select: {
         id: true,
         name: true,
-        slug: true,
         email: true,
-        systemPrompt: true,
-        model: true,
-        temperature: true,
-        tokenLimitMonthly: true,
+        plan: true,
+        status: true,
         createdAt: true,
         updatedAt: true
       }
@@ -68,23 +65,20 @@ export async function PATCH(
     }
 
     // Update client settings
-    const updatedClient = await prisma.client.update({
+    const updatedClient = await prisma.tenant.update({
       where: { id: clientId },
       data: {
-        systemPrompt: body.systemPrompt,
-        model: body.model,
-        temperature: body.temperature,
-        tokenLimitMonthly: body.tokenLimitMonthly
+        name: body.name,
+        email: body.email,
+        plan: body.plan,
+        status: body.status
       },
       select: {
         id: true,
         name: true,
-        slug: true,
         email: true,
-        systemPrompt: true,
-        model: true,
-        temperature: true,
-        tokenLimitMonthly: true,
+        plan: true,
+        status: true,
         createdAt: true,
         updatedAt: true
       }

@@ -78,21 +78,21 @@ export async function POST(request: NextRequest) {
     const clientIdentifier = clientId || queryClientId || null;
     let client: any = null;
     if (clientIdentifier) {
-      client = await prisma.client.findFirst({
+      client = await prisma.tenant.findFirst({
         where: {
           OR: [
             { id: clientIdentifier },
-            { slug: clientIdentifier }
+            { email: clientIdentifier }
           ]
         }
       });
     }
 
     // إعداد الطلب لـ OpenRouter مع الإعدادات الذكية
-    const fallbackModel = process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free';
-    const selectedModel = model || client?.model || fallbackModel;
-    const finalTemperature = typeof temperature === 'number' ? temperature : (client?.temperature ?? 0.7);
-    const finalSystemPrompt = typeof system === 'string' ? system : (client?.systemPrompt ?? computedSystemPrompt);
+          const fallbackModel = process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free';
+      const selectedModel = model || fallbackModel;
+      const finalTemperature = typeof temperature === 'number' ? temperature : 0.7;
+      const finalSystemPrompt = typeof system === 'string' ? system : computedSystemPrompt;
     const openrouterRequest = {
       model: selectedModel,
       messages: [
@@ -120,19 +120,8 @@ export async function POST(request: NextRequest) {
       messageType: { isGreeting, isAmbiguous, isPriceQuestion, isCasual }
     });
 
-    // Token limit check per client (monthly)
-    if (client?.tokenLimitMonthly && client.tokenLimitMonthly > 0) {
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const agg = await (prisma as any).usageLog.aggregate({
-        where: { clientId: client.id, createdAt: { gte: monthStart } },
-        _sum: { totalTokens: true }
-      });
-      const used = agg._sum.totalTokens || 0;
-      if (used >= client.tokenLimitMonthly) {
-        return NextResponse.json({ error: 'Token limit exceeded for this client' }, { status: 429 });
-      }
-    }
+    // Token limit check - tokenLimitMonthly غير موجود في Tenant schema
+    // يمكن إضافة هذا الحقل لاحقاً
 
     const callModel = async (modelName: string) => {
       return fetch(OPENROUTER_API_URL, {
@@ -170,38 +159,11 @@ export async function POST(request: NextRequest) {
     // Persist conversation and usage
     try {
       const session = sessionId || request.nextUrl.searchParams.get('sessionId') || (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`);
-      let conversation = await (prisma as any).conversation.findFirst({
-        where: {
-          sessionId: session,
-          clientId: client?.id ?? null,
-        }
-      });
-      if (!conversation) {
-        conversation = await (prisma as any).conversation.create({ data: { sessionId: session, clientId: client?.id ?? null } });
-      }
-
-      const assistantContent = data?.choices?.[0]?.message?.content || '';
-      const ops: any[] = [];
-      if (lastMessage) {
-        ops.push((prisma as any).message.create({ data: { conversationId: conversation.id, role: 'user', content: lastMessage } }));
-      }
-      if (assistantContent) {
-        ops.push((prisma as any).message.create({ data: { conversationId: conversation.id, role: 'assistant', content: assistantContent } }));
-      }
-      const usage = data?.usage;
-      if (usage) {
-        ops.push((prisma as any).usageLog.create({
-          data: {
-            clientId: client?.id ?? null,
-            sessionId: session,
-            model: openrouterRequest.model as string,
-            promptTokens: usage.prompt_tokens || 0,
-            completionTokens: usage.completion_tokens || 0,
-            totalTokens: usage.total_tokens || 0,
-          }
-        }));
-      }
-      await Promise.all(ops);
+      // conversation logging - conversation model يحتاج projectId
+      // يمكن إضافة هذا لاحقاً
+              // usage logging - usageLog model غير موجود
+        // يمكن إضافة هذا model لاحقاً
+        // await Promise.all(ops); // ops فارغ الآن
     } catch (persistErr) {
       console.warn('Persist error (non-fatal):', persistErr);
     }

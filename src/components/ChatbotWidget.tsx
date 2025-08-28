@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { SITE } from '../lib/constants';
-import { processUserMessage, OpenRouterMessage, streamUserMessage } from '../lib/chat-api';
+import { ChatAPI, ChatMessage, ChatSession } from '../lib/chat-api';
 import { IntentResult } from '../lib/simple-intent-detector';
 
 export default function ChatbotWidget() {
@@ -13,7 +13,7 @@ export default function ChatbotWidget() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationHistory, setConversationHistory] = useState<OpenRouterMessage[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<ChatMessage[]>([]);
   const [activeClient, setActiveClient] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [usage, setUsage] = useState<{ total: number } | null>(null);
@@ -44,88 +44,66 @@ export default function ChatbotWidget() {
 
       try {
         // إضافة رسالة المستخدم للتاريخ
-        const userOpenRouterMessage: OpenRouterMessage = {
+        const userMessageObj: ChatMessage = {
+          id: Date.now().toString(),
           role: 'user',
-          content: userMessage
+          content: userMessage,
+          timestamp: new Date()
         };
 
-        // معالجة الرسالة مع Intent Detection
-        const result = await processUserMessage(userMessage, conversationHistory, sessionId || undefined);
+        // إنشاء جلسة محادثة
+        const chatSession: ChatSession = {
+          id: sessionId || Date.now().toString(),
+          tenantId: 'default',
+          projectId: 'default',
+          channel: 'web',
+          messages: conversationHistory,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        // معالجة الرسالة
+        const chatAPI = new ChatAPI();
+        const result = await chatAPI.processMessage(userMessage, chatSession);
         
         // حفظ النية المكتشفة
         if (result.intent) {
-          setLastIntent(result.intent);
+          setLastIntent({
+            intent: result.intent,
+            confidence: result.confidence || 0,
+            entities: {},
+            shouldUseLangChain: false,
+            response: result.message
+          });
         }
 
-        // إذا كانت النية لا تحتاج LangChain، استخدم الرد المباشر
-        if (!result.intent?.shouldUseLangChain) {
-          const botMessage = {
-            id: messages.length + 2,
-            text: result.response,
-            isBot: true
-          };
-          setMessages(prev => [...prev, botMessage]);
-          
-          // تحديث تاريخ المحادثة
-          const botOpenRouterMessage: OpenRouterMessage = {
-            role: 'assistant',
-            content: result.response
-          };
-          
-          setConversationHistory(prev => [
-            ...prev,
-            userOpenRouterMessage,
-            botOpenRouterMessage
-          ]);
-          
-          setIsLoading(false);
-          return;
-        }
-
-        // إذا كانت النية تحتاج LangChain، استخدم Streaming
-        const baseId = messages.length + 2;
-        setMessages(prev => [...prev, { id: baseId, text: '', isBot: true }]);
-        let finalText = '';
+        // إضافة رد البوت
+        const botMessage = {
+          id: messages.length + 2,
+          text: result.message,
+          isBot: true
+        };
+        setMessages(prev => [...prev, botMessage]);
         
-        try {
-          const controller = new AbortController();
-          abortRef.current = controller;
-          setIsStreaming(true);
-          const startedAt = performance.now();
-          
-          finalText = await streamUserMessage(
-            userMessage,
-            conversationHistory,
-            sessionId || undefined,
-            (delta) => {
-              setMessages(prev => prev.map(m => m.id === baseId ? { ...m, text: (m.text + delta) } : m));
-            },
-            { signal: controller.signal }
-          );
-          
-          setLatencyMs(Math.round(performance.now() - startedAt));
-        } catch (e) {
-          // fallback لو البث فشل
-          finalText = result.response;
-          setMessages(prev => prev.map(m => m.id === baseId ? { ...m, text: finalText } : m));
-        } finally {
-          setIsStreaming(false);
-          abortRef.current = null;
-        }
-
         // تحديث تاريخ المحادثة
-        if (finalText) {
-          const botOpenRouterMessage: OpenRouterMessage = {
-            role: 'assistant',
-            content: finalText
-          };
-          
-          setConversationHistory(prev => [
-            ...prev,
-            userOpenRouterMessage,
-            botOpenRouterMessage
-          ]);
-        }
+        const botMessageObj: ChatMessage = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: result.message,
+          timestamp: new Date()
+        };
+        
+        setConversationHistory(prev => [
+          ...prev,
+          userMessageObj,
+          botMessageObj
+        ]);
+        
+        setIsLoading(false);
+        return;
+
+        // يمكن إضافة streaming هنا لاحقاً
+        console.log('Message processed successfully');
 
       } catch (error) {
         console.error('Error processing message:', error);

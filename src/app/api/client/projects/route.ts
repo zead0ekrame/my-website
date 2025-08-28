@@ -67,10 +67,7 @@ export async function GET(request: NextRequest) {
     // حساب الإحصائيات
     const stats = await prisma.project.aggregate({
       where: { tenantId },
-      _count: { id: true },
-      _sum: { 
-        conversations: { _count: true }
-      }
+      _count: { id: true }
     });
 
     return NextResponse.json({
@@ -91,7 +88,7 @@ export async function GET(request: NextRequest) {
         stats: {
           totalProjects: total,
           activeProjects: projects.filter(p => p.status === 'active').length,
-          totalConversations: stats._sum.conversations || 0
+          totalConversations: projects.reduce((sum, p) => sum + p._count.conversations, 0)
         }
       }
     });
@@ -137,23 +134,11 @@ export async function POST(request: NextRequest) {
         name,
         description: description || '',
         tenantId,
-        status: 'active',
-        type: templateType || 'custom'
+        status: 'active'
       }
     });
 
-    // إنشاء Chatflow افتراضي إذا كان هناك template
-    if (templateType) {
-      await prisma.chatflow.create({
-        data: {
-          name: `${name}-${templateType}`,
-          type: templateType,
-          projectId: project.id,
-          status: 'active',
-          flowJson: getTemplateFlow(templateType)
-        }
-      });
-    }
+    // يمكن إضافة Chatflow افتراضي لاحقاً
 
     return NextResponse.json({
       success: true,
@@ -170,28 +155,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function - الحصول على قالب Flow
-function getTemplateFlow(templateType: string): any {
-  const templates: Record<string, any> = {
-    'support': {
-      name: 'Support Bot',
-      description: 'بوت دعم فني ذكي',
-      nodes: [],
-      edges: []
-    },
-    'sales': {
-      name: 'Sales Bot',
-      description: 'بوت مبيعات متقدم',
-      nodes: [],
-      edges: []
-    },
-    'faq': {
-      name: 'FAQ Bot',
-      description: 'بوت الأسئلة الشائعة',
-      nodes: [],
-      edges: []
-    }
-  };
-
-  return templates[templateType] || templates['support'];
-}
+// Helper function removed - not needed

@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     // معالجة الرسالة
     const response = await chatAPI.processMessage(message, chatSession, {
       useFlowise: !!conversation.chatflowId,
-      chatflowId: conversation.chatflowId
+      chatflowId: conversation.chatflowId || undefined
     });
 
     // إضافة رد المساعد للجلسة
@@ -132,8 +132,7 @@ export async function POST(request: NextRequest) {
     await prisma.conversation.update({
       where: { id: conversation.id },
       data: { 
-        updatedAt: new Date(),
-        messageCount: { increment: 2 }
+        updatedAt: new Date()
       }
     });
 
@@ -228,13 +227,8 @@ async function updateUsageStats(tenantId: string, source?: string) {
       }
     });
 
-    // تحديث الاستخدام الشهري
-    await prisma.tenant.update({
-      where: { id: tenantId },
-      data: {
-        monthlyUsage: { increment: 1 }
-      }
-    });
+    // تحديث الاستخدام الشهري - monthlyUsage غير موجود في Tenant schema
+    // يمكن إضافة هذا الحقل لاحقاً أو استخدام UsageDaily فقط
 
   } catch (error) {
     console.error('Error updating usage stats:', error);

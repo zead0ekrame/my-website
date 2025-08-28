@@ -58,14 +58,14 @@ export async function POST(request: NextRequest) {
     let client: any = null;
     if (clientIdentifier) {
       client = await (prisma as any).client.findFirst({
-        where: { OR: [{ id: clientIdentifier }, { slug: clientIdentifier }] }
+        where: { OR: [{ id: clientIdentifier }, { email: clientIdentifier }] }
       });
     }
 
-    const fallbackModel = process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free';
-    const selectedModel = model || client?.model || fallbackModel;
-    const finalTemperature = typeof temperature === 'number' ? temperature : (client?.temperature ?? 0.7);
-    const finalSystemPrompt = typeof system === 'string' ? system : (client?.systemPrompt ?? computedSystemPrompt);
+          const fallbackModel = process.env.OPENROUTER_MODEL || 'qwen/qwen2.5-vl-32b-instruct:free';
+      const selectedModel = model || fallbackModel;
+      const finalTemperature = typeof temperature === 'number' ? temperature : 0.7;
+      const finalSystemPrompt = typeof system === 'string' ? system : computedSystemPrompt;
 
     const requestBody = {
       model: selectedModel,

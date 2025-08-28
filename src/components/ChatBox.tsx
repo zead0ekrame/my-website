@@ -148,8 +148,8 @@ export default function ChatBox({
     id: msg.id,
     message: msg.content,
     sender: msg.role === 'user' ? 'user' : 'assistant',
-    direction: msg.role === 'user' ? 'outgoing' : 'incoming',
-    position: 'single',
+    direction: msg.role === 'user' ? 'outgoing' : 'incoming' as const,
+    position: 'single' as const,
     timestamp: msg.timestamp
   }));
 
@@ -181,9 +181,8 @@ export default function ChatBox({
                 model={{
                   message: msg.message,
                   sender: msg.sender,
-                  direction: msg.direction,
-                  position: msg.position,
-                  timestamp: msg.timestamp
+                  direction: msg.direction as any,
+                  position: msg.position as any
                 }}
               />
             ))}

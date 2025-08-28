@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
         where: {
           OR: [
             { id: clientIdParam },
-            { slug: clientIdParam }
+            { email: clientIdParam }
           ]
         },
         select: { id: true }

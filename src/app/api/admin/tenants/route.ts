@@ -55,11 +55,7 @@ export async function GET(request: NextRequest) {
     // حساب الإحصائيات
     const stats = await prisma.tenant.aggregate({
       where: { status: 'active' },
-      _count: { id: true },
-      _sum: { 
-        monthlyUsage: true,
-        planLimit: true
-      }
+      _count: { id: true }
     });
 
     return NextResponse.json({
@@ -78,9 +74,7 @@ export async function GET(request: NextRequest) {
         },
         stats: {
           totalTenants: total,
-          activeTenants: stats._count.id,
-          totalUsage: stats._sum.monthlyUsage || 0,
-          totalLimit: stats._sum.planLimit || 0
+          activeTenants: stats._count.id
         }
       }
     });
@@ -126,11 +120,7 @@ export async function POST(request: NextRequest) {
         name,
         email,
         plan,
-        companySize: companySize || 'small',
-        industry: industry || 'technology',
-        status: 'active',
-        planLimit: getPlanLimit(plan),
-        monthlyUsage: 0
+        status: 'active'
       }
     });
 
@@ -140,8 +130,7 @@ export async function POST(request: NextRequest) {
         email,
         name: name,
         role: 'admin',
-        tenantId: tenant.id,
-        isActive: true
+        tenantId: tenant.id
       }
     });
 
@@ -160,12 +149,4 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function
-function getPlanLimit(plan: string): number {
-  switch (plan) {
-    case 'basic': return 1000;
-    case 'advanced': return 5000;
-    case 'professional': return 20000;
-    default: return 1000;
-  }
-}
+// Helper function removed - not needed

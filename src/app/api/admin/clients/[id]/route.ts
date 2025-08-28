@@ -7,7 +7,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   try {
-    await prisma.client.delete({ where: { id: params.id } });
+    await prisma.tenant.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -23,12 +23,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const data: any = {};
     if (typeof body?.name === 'string') data.name = body.name;
     if (typeof body?.slug === 'string') data.slug = body.slug;
-    if (typeof body?.systemPrompt !== 'undefined') data.systemPrompt = body.systemPrompt;
-    if (typeof body?.model !== 'undefined') data.model = body.model;
-    if (typeof body?.temperature !== 'undefined') data.temperature = body.temperature;
+    // هذه الحقول غير موجودة في Tenant schema
+    // if (typeof body?.systemPrompt !== 'undefined') data.systemPrompt = body.systemPrompt;
+    // if (typeof body?.model !== 'undefined') data.model = body.model;
+    // if (typeof body?.temperature !== 'undefined') data.temperature = body.temperature;
 
-    const client = await prisma.client.update({ where: { id: params.id }, data });
-    return NextResponse.json({ client });
+    const tenant = await prisma.tenant.update({ where: { id: params.id }, data });
+    return NextResponse.json({ tenant });
   } catch (e) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
