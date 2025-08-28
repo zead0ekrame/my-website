@@ -1,58 +1,86 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { defaultIntentDetector } from '@/lib/simple-intent-detector';
-
-interface ChatRequest {
-  message: string;
-  sender_id?: string;
-  session_id?: string;
-}
+import { ChatAPI, ChatSession } from '@/lib/chat-api';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: ChatRequest = await request.json();
-    const { message, sender_id, session_id } = body;
+    const body = await request.json();
+    const { message, sessionId } = body;
 
     if (!message) {
-      return NextResponse.json({ error: 'الرسالة مطلوبة' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: 'Message is required' },
+        { status: 400 }
+      );
     }
 
-    // إعداد معرف المستخدم
-    const userId = sender_id || `user_${Date.now()}`;
+    // إنشاء جلسة محادثة أو استخدام الموجودة
+    let chatSession: ChatSession = {
+      id: sessionId || `session_${Date.now()}`,
+      tenantId: 'default',
+      projectId: 'default',
+      channel: 'web',
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    // استخدام Intent Detector
-    const intentResult = defaultIntentDetector.detectIntent(message);
-    
-    // الحصول على الرد المناسب
-    let response: string;
-    let shouldUseLangChain = false;
+    // إضافة رسالة المستخدم للجلسة
+    chatSession.messages.push({
+      id: Date.now().toString(),
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+      metadata: {}
+    });
 
-    if (intentResult.shouldUseLangChain) {
-      // استخدام LangChain للأسئلة المعقدة
-      response = `أرى إن سؤالك يحتاج تفصيل أكثر. سأستخدم الذكاء الاصطناعي لإعطائك إجابة شاملة...\n\nسؤالك: ${message}\n\nالنية المكتشفة: ${intentResult.intent} (ثقة: ${Math.round(intentResult.confidence * 100)}%)`;
-      shouldUseLangChain = true;
-    } else {
-      // استخدام الرد المباشر
-      response = defaultIntentDetector.getResponseForIntent(intentResult.intent, intentResult.entities);
-      shouldUseLangChain = false;
-    }
+    // معالجة الرسالة
+    const chatAPI = new ChatAPI();
+    const result = await chatAPI.processMessage(message, chatSession);
+
+    // إضافة رد البوت للجلسة
+    chatSession.messages.push({
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: result.message,
+      timestamp: new Date(),
+      metadata: {
+        intent: result.intent,
+        confidence: result.confidence,
+        source: result.metadata?.source
+      }
+    });
+
+    // تحديث وقت الجلسة
+    chatSession.updatedAt = new Date();
+
+    // الحصول على الذاكرة
+    const memory = chatAPI.getConversationMemory(chatSession.id);
 
     return NextResponse.json({
       success: true,
-      response: response,
-      intent: intentResult.intent,
-      confidence: intentResult.confidence,
-      entities: intentResult.entities,
-      shouldUseLangChain: shouldUseLangChain,
-      sender_id: userId,
-      session_id: session_id || `session_${Date.now()}`
+      response: result.message,
+      intent: result.intent,
+      confidence: result.confidence,
+      entities: result.metadata?.entities || {},
+      shouldUseLangChain: result.metadata?.source === 'langchain_enhanced',
+      sender_id: `user_${Date.now()}`,
+      session_id: chatSession.id,
+      memory: memory,
+      session: {
+        id: chatSession.id,
+        messageCount: chatSession.messages.length,
+        lastMessage: chatSession.messages[chatSession.messages.length - 1]
+      }
     });
 
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('Error in Rasa chat API:', error);
+    
     return NextResponse.json(
       { 
-        error: 'حدث خطأ في معالجة الرسالة',
-        details: error instanceof Error ? error.message : 'خطأ غير معروف'
+        success: false, 
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );

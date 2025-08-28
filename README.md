@@ -1,4 +1,4 @@
-# 🚀 Privacy Meta - Simple Intent Detection + LangChain
+# 🚀 My Website - Simple Intent Detection + LangChain
 
 ## 📋 نظرة عامة
 

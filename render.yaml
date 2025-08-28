@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: privacy-meta
+    name: my-website
     env: node
     plan: starter
     dockerfilePath: ./Dockerfile.secure

@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Privacy Meta - منصة الذكاء الاصطناعي الآمنة',
+  title: 'My Website - منصة الذكاء الاصطناعي الآمنة',
   description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان. واجهة دردشة ذكية مع حماية متقدمة للبيانات.',
   keywords: 'ذكاء اصطناعي، خصوصية، أمان، chatbot، AI، حماية البيانات، منصة آمنة',
-  authors: [{ name: 'Privacy Meta Team' }],
+  authors: [{ name: 'My Website Team' }],
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   icons: {
     icon: [
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     shortcut: '/icon.svg',
   },
   openGraph: {
-    title: 'Privacy Meta - منصة الذكاء الاصطناعي الآمنة',
+    title: 'My Website - منصة الذكاء الاصطناعي الآمنة',
     description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان',
     type: 'website',
     locale: 'ar_AR',

@@ -1,8 +1,8 @@
-# 🚀 Privacy Meta - نظام متكامل مع Flowise
+# 🚀 My Website - نظام متكامل مع Flowise
 
 ## 📋 نظرة عامة
 
-نظام **Privacy Meta** هو حل متكامل لإنشاء وإدارة chatbots ذكية للمراسلات (WhatsApp, Messenger, Instagram) مع دعم كامل لـ **Flowise** كمنصة backend للذكاء الاصطناعي.
+نظام **My Website** هو حل متكامل لإنشاء وإدارة chatbots ذكية للمراسلات (WhatsApp, Messenger, Instagram) مع دعم كامل لـ **Flowise** كمنصة backend للذكاء الاصطناعي.
 
 ## 🏗️ المعمارية
 
@@ -52,7 +52,7 @@
 ## 📁 هيكل المشروع
 
 ```
-privacy-meta/
+        my-website/
 ├── flowise/                    # قوالب Flowise
 │   └── chatflows/
 │       ├── support-bot.json   # بوت الدعم الفني
@@ -80,7 +80,7 @@ privacy-meta/
 ```bash
 # استنساخ المشروع
 git clone <repository-url>
-cd privacy-meta
+        cd my-website
 
 # تثبيت التبعيات
 npm install
@@ -236,7 +236,7 @@ POST   /api/flowise/chatflows
 ### Docker Deployment
 ```bash
 # بناء الصورة
-docker build -t privacy-meta .
+        docker build -t my-website .
 
 # تشغيل الحاويات
 docker-compose up -d
@@ -293,11 +293,11 @@ npm run dev
 ## 📞 الدعم
 
 للحصول على الدعم:
-- 📧 Email: support@privacy-meta.com
+        - 📧 Email: support@my-website.com
 - 📱 WhatsApp: +20 123 456 789
-- 🌐 Website: www.privacy-meta.com
+        - 🌐 Website: www.my-website.com
 
 ---
 
-**Privacy Meta** - حلول chatbot ذكية للمراسلات 🚀
+**My Website** - حلول chatbot ذكية للمراسلات 🚀
 

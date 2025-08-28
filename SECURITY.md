@@ -1,4 +1,4 @@
-# Security Documentation - Privacy Meta
+# Security Documentation - My Website
 
 ## 🔒 Security Features
 
@@ -77,7 +77,7 @@ ADMIN_PASSWORD=your-super-strong-password
 JWT_SECRET=your-super-secret-jwt-key-64-chars-minimum
 
 # Database security
-DATABASE_URL="mysql://username:password@localhost:3306/privacy_meta"
+        DATABASE_URL="mysql://username:password@localhost:3306/my_website"
 ```
 
 ### Rate Limiting
@@ -114,7 +114,7 @@ DATABASE_URL="mysql://username:password@localhost:3306/privacy_meta"
 4. Update security measures
 
 ### Contact Information
-- **Security Team**: security@privacy-meta.com
+        - **Security Team**: security@my-website.com
 - **Emergency**: +1-555-SECURITY
 
 ## 📚 Security Resources

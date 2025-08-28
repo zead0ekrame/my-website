@@ -25,7 +25,7 @@ export default function AdvancedChatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'أهلاً بيك! أنا مساعد ذكي متقدم. أقدر أتعامل مع النصوص، الصوت، الصور، والملفات! 🚀',
+      text: 'أهلاً بيك! أنا مساعد ذكي متقدم مع ذاكرة محادثة! 🧠\n\nأقدر أتعامل مع النصوص، الصوت، الصور، والملفات!\n\nوسأبني ذاكرة مختصرة بعد 10 رسائل! 🎯',
       isBot: true,
       timestamp: new Date(),
       type: 'text'
@@ -36,12 +36,15 @@ export default function AdvancedChatbot() {
   const [isRecording, setIsRecording] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('ar');
   const [isListening, setIsListening] = useState(false);
+  const [conversationMemory, setConversationMemory] = useState<any>(null);
+  const [showMemory, setShowMemory] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const sessionId = useRef(`session_${Date.now()}`);
 
   const languages: Language[] = [
     { code: 'ar', name: 'العربية', flag: '🇪🇬' },
@@ -74,18 +77,53 @@ export default function AdvancedChatbot() {
     setInputText('');
     setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
-      const botResponse: Message = {
+    try {
+      // إرسال الرسالة للـ API
+      const response = await fetch('/api/rasa/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: inputText,
+          sessionId: sessionId.current
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // تحديث الذاكرة
+        if (data.metadata?.memory) {
+          setConversationMemory(data.metadata.memory);
+        }
+
+        const botResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: data.response,
+          isBot: true,
+          timestamp: new Date(),
+          type: 'text'
+        };
+        setMessages(prev => [...prev, botResponse]);
+      } else {
+        throw new Error('API request failed');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // رد احتياطي
+      const fallbackResponse: Message = {
         id: (Date.now() + 1).toString(),
-        text: `أفهم سؤالك: "${inputText}"! هذا رد تجريبي من البوت المتقدم. 🎯`,
+        text: 'عذراً، حدث خطأ في معالجة رسالتك. حاول مرة أخرى.',
         isBot: true,
         timestamp: new Date(),
         type: 'text'
       };
-      setMessages(prev => [...prev, botResponse]);
+      setMessages(prev => [...prev, fallbackResponse]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const startVoiceRecording = async () => {
@@ -252,14 +290,55 @@ export default function AdvancedChatbot() {
                   <p className="text-sm opacity-90">يدعم النصوص، الصوت، الصور، والملفات</p>
                 </div>
               </div>
-              <button
-                onClick={toggleLanguage}
-                className="text-2xl hover:scale-110 transition-transform"
-                title="تغيير اللغة"
-              >
-                {languages.find(lang => lang.code === selectedLanguage)?.flag}
-              </button>
+              <div className="flex items-center gap-2">
+                {conversationMemory && (
+                  <button
+                    onClick={() => setShowMemory(!showMemory)}
+                    className="text-white hover:text-blue-200 transition-colors p-2 rounded-lg hover:bg-white/10"
+                    title="عرض الذاكرة"
+                  >
+                    🧠
+                  </button>
+                )}
+                <button
+                  onClick={toggleLanguage}
+                  className="text-2xl hover:scale-110 transition-transform"
+                  title="تغيير اللغة"
+                >
+                  {languages.find(lang => lang.code === selectedLanguage)?.flag}
+                </button>
+              </div>
             </div>
+
+            {/* Memory Display */}
+            {showMemory && conversationMemory && (
+              <div className="mt-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                <h4 className="font-semibold mb-2 text-sm">🧠 ذاكرة المحادثة</h4>
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span>عدد الرسائل:</span>
+                    <span className="font-medium">{conversationMemory.messageCount || 0}</span>
+                  </div>
+                  {conversationMemory.currentService && (
+                    <div className="flex justify-between">
+                      <span>الخدمة المطلوبة:</span>
+                      <span className="font-medium">{conversationMemory.currentService}</span>
+                    </div>
+                  )}
+                  {conversationMemory.urgencyLevel !== 'low' && (
+                    <div className="flex justify-between">
+                      <span>مستوى الأولوية:</span>
+                      <span className="font-medium text-yellow-300">{conversationMemory.urgencyLevel}</span>
+                    </div>
+                  )}
+                  {conversationMemory.conversationSummary && (
+                    <div className="mt-2 p-2 bg-white/5 rounded text-xs">
+                      <span className="font-medium">ملخص:</span> {conversationMemory.conversationSummary}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Messages */}

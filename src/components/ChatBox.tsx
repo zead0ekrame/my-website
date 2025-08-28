@@ -164,7 +164,7 @@ export default function ChatBox({
                   <span className="text-white text-sm font-bold">ب</span>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Privacy Meta Bot</div>
+                  <div className="font-semibold text-gray-900">My Website Bot</div>
                   <div className="text-xs text-gray-500">دعم فني ذكي</div>
                 </div>
               </div>
