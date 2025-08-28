@@ -2,25 +2,31 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'My Website - منصة الذكاء الاصطناعي الآمنة',
+  title: 'حلول تقنية متقدمة - منصة الذكاء الاصطناعي',
   description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان. واجهة دردشة ذكية مع حماية متقدمة للبيانات.',
-  keywords: 'ذكاء اصطناعي، خصوصية، أمان، chatbot، AI، حماية البيانات، منصة آمنة',
-  authors: [{ name: 'My Website Team' }],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' }
-    ],
-    shortcut: '/icon.svg',
-  },
+  authors: [{ name: 'حلول تقنية متقدمة' }],
+  keywords: ['ذكاء اصطناعي', 'خصوصية', 'أمان', 'chatbot', 'AI', 'حماية البيانات', 'منصة آمنة'],
   openGraph: {
-    title: 'My Website - منصة الذكاء الاصطناعي الآمنة',
+    title: 'حلول تقنية متقدمة - منصة الذكاء الاصطناعي',
     description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان',
-    type: 'website',
     locale: 'ar_AR',
-    images: ['/icon.svg'],
+    type: 'website',
+    images: [
+      {
+        url: '/icon.svg',
+        width: 1200,
+        height: 630,
+        alt: 'حلول تقنية متقدمة'
+      }
+    ]
   },
-}
+  twitter: {
+    card: 'summary_large_image',
+    title: 'حلول تقنية متقدمة - منصة الذكاء الاصطناعي',
+    description: 'منصة ذكاء اصطناعي متقدمة مع التركيز على الخصوصية والأمان',
+    images: ['/icon.svg']
+  }
+};
 
 export default function RootLayout({
   children,

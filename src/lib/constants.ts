@@ -1,6 +1,6 @@
 export const SITE = {
-  brandAr: "إيجي أفريكا",
-  brandEn: "Egy Africa",
+  brandAr: "حلول تقنية متقدمة",
+  brandEn: "Advanced Tech Solutions",
   owner: "EKRAMY FOUAAD",
   phone: "+20 106 616 1454",
   emailPrimary: "ziad@ekramy-ai.online",

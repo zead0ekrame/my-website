@@ -12,6 +12,13 @@ export default function Home() {
     <>
       <Navbar />
       <main className="min-h-screen">
+        <div className="hidden lg:block absolute top-28 right-8 z-0 pointer-events-none">
+          <div className="text-right opacity-50 max-w-lg">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-slate-800 leading-tight tracking-tight">
+              حلول تقنية متقدمة — منصة الذكاء الاصطناعي
+            </h1>
+          </div>
+        </div>
         <Hero />
         <Features />
         <ServicesGrid />
