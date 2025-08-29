@@ -1,14 +1,15 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Meta Domain Verification',
+  description: 'Meta Domain Verification File',
+};
+
 export default function MetaVerification() {
   return (
-    <html>
-      <head>
-        <meta charSet="utf-8" />
-        <title>Meta Domain Verification</title>
-      </head>
-      <body>
-        <!-- Meta Domain Verification File -->
-        <!-- This file is used for domain ownership verification with Meta -->
-      </body>
-    </html>
+    <div>
+      {/* Meta Domain Verification File */}
+      {/* This file is used for domain ownership verification with Meta */}
+    </div>
   );
 }
