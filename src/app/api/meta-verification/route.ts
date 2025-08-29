@@ -1,0 +1,22 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  const html = `<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Domain Verification</title>
+</head>
+<body>
+    <!-- Meta Domain Verification File -->
+    <!-- This file is used for domain ownership verification with Meta -->
+</body>
+</html>`;
+
+  return new NextResponse(html, {
+    headers: {
+      'Content-Type': 'text/html',
+    },
+  });
+}
